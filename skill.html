@@ -1,0 +1,4523 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skill 模块产品原型</title>
+  <style>
+    :root {
+      --blue: #2468f2;
+      --blue-strong: #0f5bff;
+      --blue-soft: #e9f1ff;
+      --green: #18a058;
+      --green-soft: #e8f8ef;
+      --orange: #d98512;
+      --orange-soft: #fff3df;
+      --red: #d92d20;
+      --red-soft: #fff0ed;
+      --ink: #1f2530;
+      --text: #3e4654;
+      --muted: #7f8a9a;
+      --subtle: #a8b1c0;
+      --line: #e6eaf0;
+      --panel: #ffffff;
+      --soft: #f5f7fb;
+      --soft-2: #f0f4fa;
+      --shadow: 0 12px 30px rgba(33, 46, 74, .08);
+      --radius: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--font);
+      background:
+        linear-gradient(180deg, rgba(241, 246, 255, .95), rgba(247, 249, 253, .96) 280px, #f7f9fd 100%);
+    }
+
+    body::before {
+      content: "admin   admin   admin";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      color: rgba(120, 132, 156, .08);
+      font-size: 15px;
+      letter-spacing: 0;
+      transform: rotate(-13deg);
+      background-image: repeating-linear-gradient(0deg, transparent 0 180px, rgba(255,255,255,.25) 180px 360px);
+      white-space: pre;
+      pointer-events: none;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    .app {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 72px;
+      padding: 0 28px;
+      border-bottom: 1px solid rgba(215, 221, 232, .9);
+      background: rgba(255, 255, 255, .86);
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar-left,
+    .topbar-right,
+    .row,
+    .inline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-stack h1,
+    .title-stack h2,
+    .title-stack p {
+      margin: 0;
+    }
+
+    .title-stack h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .title-stack h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .title-stack p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .page {
+      padding: 28px 36px 42px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(28, 39, 61, .04);
+      font-weight: 600;
+      white-space: nowrap;
+      transition: .16s ease;
+    }
+
+    .btn:hover {
+      border-color: #cad4e5;
+      box-shadow: 0 5px 14px rgba(31, 44, 72, .08);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      border-color: var(--blue);
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 6px 14px rgba(36, 104, 242, .24);
+    }
+
+    .btn-primary:hover { background: var(--blue-strong); }
+
+    .btn-ghost {
+      color: var(--text);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .btn-soft {
+      color: var(--blue);
+      border-color: transparent;
+      background: var(--blue-soft);
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      color: var(--red);
+      border-color: #ffd5cf;
+      background: var(--red-soft);
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      color: currentColor;
+      flex: 0 0 auto;
+    }
+
+    .icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .icon-solid svg { fill: currentColor; stroke: none; }
+
+    .back-btn {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      border-radius: 6px;
+    }
+
+    .back-btn:hover { background: var(--soft-2); }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 28px 0 18px;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tabs {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.9);
+    }
+
+    .tab {
+      min-width: 82px;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 6px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .tab.active {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .control,
+    .search {
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: .16s ease;
+    }
+
+    .control:focus,
+    .search:focus,
+    textarea:focus,
+    input:focus {
+      border-color: #8cb0ff;
+      box-shadow: 0 0 0 3px rgba(36, 104, 242, .12);
+    }
+
+    .control {
+      min-width: 128px;
+      padding: 0 12px;
+    }
+
+    .search-wrap {
+      position: relative;
+      min-width: 340px;
+    }
+
+    .search-wrap .icon {
+      position: absolute;
+      top: 11px;
+      right: 12px;
+      color: var(--subtle);
+    }
+
+    .search {
+      width: 100%;
+      padding: 0 42px 0 14px;
+    }
+
+    .bulk-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      border: 1px solid #b8cffd;
+      border-radius: 8px;
+      background: #f1f6ff;
+      color: #24539f;
+    }
+
+    .bulk-bar.active { display: flex; }
+
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .skill-card {
+      position: relative;
+      min-height: 220px;
+      padding: 26px 28px 18px;
+      border: 1px solid rgba(224, 229, 238, .9);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .88);
+      box-shadow: 0 8px 20px rgba(35, 49, 79, .035);
+      transition: .16s ease;
+    }
+
+    .skill-card:hover {
+      border-color: #c8d8fb;
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+
+    .skill-card.selected {
+      border-color: #8fb2ff;
+      box-shadow: 0 0 0 3px rgba(36, 104, 242, .08);
+    }
+
+    .skill-card-head {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .skill-visual {
+      width: 64px;
+      height: 64px;
+      position: relative;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #eaf6ff, #dbeeff);
+      box-shadow: inset 0 -7px 14px rgba(36, 104, 242, .1);
+      overflow: hidden;
+    }
+
+    .skill-visual::before,
+    .skill-visual::after {
+      content: "";
+      position: absolute;
+      border-radius: 7px;
+      transform: rotate(7deg);
+    }
+
+    .skill-visual::before {
+      width: 32px;
+      height: 32px;
+      left: 13px;
+      top: 17px;
+      background: #71d0f7;
+      box-shadow: 18px 3px 0 #386cf4;
+    }
+
+    .skill-visual::after {
+      width: 10px;
+      height: 10px;
+      left: 26px;
+      top: 13px;
+      border: 3px solid #41a9e9;
+      background: #dff5ff;
+      box-shadow: 20px 19px 0 -1px #2858d8;
+    }
+
+    .skill-info {
+      min-width: 0;
+    }
+
+    .skill-info h3 {
+      margin: 4px 0 8px;
+      font-size: 19px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .skill-info p {
+      height: 48px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .badge-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 24px;
+      padding: 0 9px;
+      border-radius: 99px;
+      color: var(--muted);
+      background: #f1f4f8;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge.blue { color: var(--blue); background: var(--blue-soft); }
+    .badge.green { color: var(--green); background: var(--green-soft); }
+    .badge.orange { color: var(--orange); background: var(--orange-soft); }
+    .badge.red { color: var(--red); background: var(--red-soft); }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 99px;
+      background: currentColor;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      max-width: 160px;
+      height: 24px;
+      padding: 0 8px;
+      border: 1px solid #dbe2ec;
+      border-radius: 5px;
+      color: #647186;
+      background: #fff;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .skill-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-left: 98px;
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .skill-hover-actions {
+      position: absolute;
+      right: 18px;
+      bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition: .16s ease;
+    }
+
+    .skill-card:hover .skill-hover-actions,
+    .skill-card:focus-within .skill-hover-actions,
+    .skill-card.actions-visible .skill-hover-actions {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--blue);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-flex;
+      width: 42px;
+      height: 24px;
+      padding: 2px;
+      border-radius: 99px;
+      background: #c8d0dc;
+      transition: .16s ease;
+      vertical-align: middle;
+    }
+
+    .switch::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(32, 40, 56, .24);
+      transition: .16s ease;
+    }
+
+    .switch.on {
+      background: var(--blue);
+    }
+
+    .switch.on::after {
+      transform: translateX(18px);
+    }
+
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      border: 1px dashed #cfd8e6;
+      border-radius: 8px;
+      color: var(--muted);
+      background: rgba(255,255,255,.7);
+      text-align: center;
+    }
+
+    .create-page {
+      min-height: calc(100vh - 72px);
+      padding: 72px 24px 80px;
+      background:
+        radial-gradient(circle at 60% 0, rgba(222, 236, 255, .65), transparent 310px),
+        linear-gradient(180deg, rgba(255,255,255,.5), rgba(247,249,253,.96));
+    }
+
+    .create-inner {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .assistant-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      align-items: end;
+      gap: 34px;
+      margin-bottom: 34px;
+    }
+
+    .assistant-hero h1 {
+      margin: 0 0 18px;
+      font-size: 40px;
+      letter-spacing: 0;
+    }
+
+    .assistant-hero p {
+      max-width: 680px;
+      margin: 0;
+      color: #59667a;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    .avatar-illustration {
+      position: relative;
+      width: 210px;
+      height: 190px;
+    }
+
+    .avatar-illustration::before {
+      content: "Hi，我是你的 Skill 搭建助手";
+      position: absolute;
+      left: -54px;
+      top: 16px;
+      min-width: 190px;
+      padding: 7px 14px;
+      border: 1px solid #9fbaff;
+      border-radius: 16px;
+      color: #516079;
+      background: rgba(255,255,255,.9);
+      font-size: 13px;
+    }
+
+    .avatar-face {
+      position: absolute;
+      right: 16px;
+      bottom: 0;
+      width: 122px;
+      height: 148px;
+      border-radius: 60px 60px 32px 32px;
+      background:
+        radial-gradient(circle at 42px 45px, #273140 0 5px, transparent 6px),
+        radial-gradient(circle at 78px 45px, #273140 0 5px, transparent 6px),
+        linear-gradient(180deg, #f3c9a5 0 58px, #f7d4b7 58px 86px, #e8edf4 86px);
+      box-shadow: inset 0 0 0 4px rgba(255,255,255,.55), 0 12px 28px rgba(31,44,72,.14);
+    }
+
+    .avatar-face::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: -16px;
+      width: 88px;
+      height: 38px;
+      border-radius: 50% 50% 35% 35%;
+      background: #2f2530;
+      box-shadow: 18px 6px 0 -2px #2f2530;
+    }
+
+    .avatar-face::after {
+      content: "";
+      position: absolute;
+      left: 39px;
+      top: 68px;
+      width: 38px;
+      height: 18px;
+      border-bottom: 4px solid #a55f54;
+      border-radius: 0 0 28px 28px;
+    }
+
+    .composer {
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.94);
+      box-shadow: var(--shadow);
+    }
+
+    .composer textarea,
+    .assistant-box textarea,
+    .debug-input textarea {
+      width: 100%;
+      min-height: 128px;
+      padding: 14px;
+      border: 0;
+      outline: none;
+      resize: vertical;
+      color: var(--ink);
+      background: transparent;
+      line-height: 1.65;
+    }
+
+    .composer-footer,
+    .assistant-footer,
+    .debug-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #eef2f7;
+    }
+
+    .model-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .model-mark {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: conic-gradient(from 20deg, #2468f2, #27d7a8, #875cff, #2468f2);
+    }
+
+    .segmented {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .segmented button {
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .segmented button.active {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .edit-shell {
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr) 420px;
+      min-height: calc(100vh - 72px);
+      background: #fff;
+    }
+
+    .edit-shell.view-workbench {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .edit-shell.debug-collapsed {
+      grid-template-columns: 420px minmax(0, 1fr);
+    }
+
+    .edit-shell.debug-open {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .edit-shell.experience-workbench {
+      grid-template-columns: minmax(0, 1fr);
+      background: #f7f9fd;
+    }
+
+    .assistant-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 72px);
+      border-right: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 100% 0, rgba(246, 235, 255, .7), transparent 240px),
+        linear-gradient(180deg, #fbfcff, #fff);
+    }
+
+    .assistant-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid #edf1f7;
+    }
+
+    .assistant-head h3,
+    .panel-title h3 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .assistant-body {
+      flex: 1;
+      padding: 22px 20px;
+      overflow: auto;
+    }
+
+    .assistant-message {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .tiny-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 12px 13px, #263242 0 3px, transparent 4px),
+        radial-gradient(circle at 22px 13px, #263242 0 3px, transparent 4px),
+        linear-gradient(180deg, #f2c2a1 0 58%, #e7edf7 58%);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.65);
+    }
+
+    .assistant-copy {
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .assistant-box {
+      margin: 0 20px 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .assistant-box textarea {
+      min-height: 140px;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .edit-main {
+      min-width: 0;
+      padding: 28px 30px 50px;
+      overflow: auto;
+      background: #fff;
+    }
+
+    .edit-main-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title h3 {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      font-size: 19px;
+      letter-spacing: 0;
+    }
+
+    .form-panel,
+    .file-panel,
+    .experience-panel,
+    .debug-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .form-panel {
+      padding: 22px;
+      background: #f7f9fc;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px 22px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .field small {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 104px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .field.disabled input {
+      color: #aeb7c5;
+      background: #f7f9fc;
+    }
+
+    .required {
+      color: var(--red);
+      margin-right: 4px;
+    }
+
+    .capability-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(104px, 1fr));
+      gap: 10px;
+    }
+
+    .capability {
+      min-height: 54px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .capability.active {
+      border-color: #9db9ff;
+      background: #f1f6ff;
+    }
+
+    .file-panel {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 420px;
+      overflow: hidden;
+    }
+
+    .file-tree {
+      border-right: 1px solid var(--line);
+      background: #f7f9fc;
+    }
+
+    .file-tree-head,
+    .editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 46px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .file-list {
+      padding: 12px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      height: 38px;
+      padding: 0 10px;
+      border-radius: 6px;
+      color: var(--text);
+      text-align: left;
+    }
+
+    .file-item:hover,
+    .file-item.active {
+      background: #eef3fb;
+    }
+
+    .file-item.active {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .code-editor {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 420px;
+    }
+
+    .code-editor textarea {
+      flex: 1;
+      width: 100%;
+      min-height: 360px;
+      padding: 18px;
+      border: 0;
+      resize: none;
+      outline: none;
+      color: #293244;
+      background: #fff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .experience-panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: calc(100vh - 72px);
+      border-top: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-radius: 0;
+      background:
+        linear-gradient(180deg, rgba(247, 250, 255, .98), rgba(255,255,255,.98));
+      overflow: auto;
+    }
+
+    .experience-workbench .experience-panel {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .experience-workbench .metric-grid {
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+    }
+
+    .experience-workbench .experience-body {
+      display: block;
+      padding: 24px;
+    }
+
+    .experience-list {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .call-record-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .call-record-table {
+      min-width: 1120px;
+      border: 0;
+      table-layout: fixed;
+    }
+
+    .call-record-table th,
+    .call-record-table td {
+      white-space: nowrap;
+    }
+
+    .call-record-table th:nth-child(1),
+    .call-record-table td:nth-child(1) { width: 120px; }
+
+    .call-record-table th:nth-child(2),
+    .call-record-table td:nth-child(2) { width: 110px; }
+
+    .call-record-table th:nth-child(3),
+    .call-record-table td:nth-child(3) { width: 250px; }
+
+    .call-record-table th:nth-child(4),
+    .call-record-table td:nth-child(4) { width: 180px; }
+
+    .call-record-table th:nth-child(5),
+    .call-record-table td:nth-child(5) { width: 80px; }
+
+    .call-record-table th:nth-child(6),
+    .call-record-table td:nth-child(6) { width: 90px; }
+
+    .call-record-table th:nth-child(7),
+    .call-record-table td:nth-child(7) { width: 150px; }
+    }
+
+    .experience-head {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 24px 24px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 250, 255, .94);
+      backdrop-filter: blur(12px);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 8px;
+      color: var(--subtle);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .experience-body {
+      padding: 18px 24px 28px;
+    }
+
+    .call-card {
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .call-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .call-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .call-fragments {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .fragment {
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .fragment strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .hint {
+      padding: 11px 12px;
+      border: 1px solid #ffdca7;
+      border-radius: 8px;
+      color: #845200;
+      background: #fff8eb;
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .hint.blue {
+      border-color: #bfd1ff;
+      color: #26539a;
+      background: #f2f6ff;
+    }
+
+    .debug-drawer {
+      position: fixed;
+      top: 72px;
+      right: 0;
+      bottom: 0;
+      z-index: 35;
+      width: min(520px, 100vw);
+      border-left: 1px solid var(--line);
+      background: #fff;
+      box-shadow: -18px 0 32px rgba(31,44,72,.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .debug-scrim {
+      position: fixed;
+      inset: 72px 0 0;
+      z-index: 34;
+      background: rgba(17, 24, 39, .08);
+    }
+
+    .debug-panel {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 72px);
+      min-width: 0;
+      border-top: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-radius: 0;
+      background: #fff;
+      box-shadow: -8px 0 22px rgba(31,44,72,.04);
+    }
+
+    .debug-drawer .debug-panel {
+      position: static;
+      top: auto;
+      width: 100%;
+      height: 100%;
+      box-shadow: none;
+    }
+
+    .debug-panel .debug-input {
+      margin: 0 20px 20px;
+    }
+
+    .debug-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .debug-head h3 { margin: 0; font-size: 18px; }
+
+    .debug-body {
+      flex: 1;
+      padding: 22px 24px;
+      overflow: auto;
+      background:
+        linear-gradient(180deg, #f9fbff, #fff 180px);
+    }
+
+    .preview-card {
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr);
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 20px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--shadow);
+    }
+
+    .debug-log {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 12px 0 22px;
+    }
+
+    .bubble {
+      max-width: 88%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .bubble.user {
+      align-self: flex-end;
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .bubble.assistant {
+      align-self: flex-start;
+      color: var(--text);
+      background: #f0f4fa;
+    }
+
+    .session-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+      color: var(--subtle);
+      font-size: 12px;
+    }
+
+    .session-divider::before,
+    .session-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .debug-input {
+      margin: 0 24px 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .debug-input textarea {
+      min-height: 96px;
+    }
+
+    .attach-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 12px 12px;
+    }
+
+    .attach-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .attach-chip.enabled {
+      color: #24539f;
+      border-color: #bdd1ff;
+      background: #f2f6ff;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(24, 31, 42, .46);
+    }
+
+    .modal {
+      width: min(980px, 100%);
+      max-height: min(84vh, 860px);
+      display: flex;
+      flex-direction: column;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 22px 80px rgba(17, 24, 39, .24);
+      overflow: hidden;
+    }
+
+    .modal.small { width: min(640px, 100%); }
+    .modal.wide { width: min(1180px, 100%); }
+
+    .modal-head,
+    .modal-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-foot {
+      justify-content: flex-end;
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      background: #fbfcff;
+    }
+
+    .modal-head h2,
+    .modal-head h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .modal-body {
+      padding: 22px 24px;
+      overflow: auto;
+    }
+
+    .upload-zone {
+      min-height: 230px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border: 1px dashed #cfd8e6;
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fbfdff;
+      text-align: center;
+    }
+
+    .upload-mark {
+      width: 58px;
+      height: 58px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    .table th,
+    .table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table th {
+      color: var(--text);
+      background: #f6f8fb;
+      font-weight: 700;
+    }
+
+    .table tr:last-child td { border-bottom: 0; }
+
+    .version-compare-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 16px;
+      border: 1px solid #cbd9ff;
+      border-radius: 8px;
+      background: #f6f9ff;
+    }
+
+    .version-save-summary {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 18px;
+      padding: 14px;
+      border: 1px solid #dbe6ff;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #f8fbff, #fff);
+    }
+
+    .version-save-summary .summary-icon {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .version-save-summary strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .version-mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .version-mode-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 10px;
+      min-height: 108px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .version-mode-card:has(input:checked) {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(31, 111, 235, .1);
+    }
+
+    .version-mode-card.disabled {
+      color: var(--subtle);
+      background: #f7f8fb;
+      cursor: not-allowed;
+    }
+
+    .version-mode-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .version-mode-card span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .version-form-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcff;
+    }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .diff-pane {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .diff-title {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      background: #f7f9fc;
+      font-weight: 700;
+    }
+
+    pre.diff {
+      min-height: 330px;
+      max-height: 480px;
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      color: #2c3444;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    .line-add { background: #eaf8ef; color: #13783d; display: block; }
+    .line-del { background: #fff0ed; color: #b42318; display: block; text-decoration: line-through; }
+    .line-same { display: block; }
+
+    .toast-wrap {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 80;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      min-width: 260px;
+      max-width: 380px;
+      padding: 12px 14px;
+      border: 1px solid #c7d8ff;
+      border-radius: 8px;
+      color: #1f4f9a;
+      background: #f2f6ff;
+      box-shadow: var(--shadow);
+      line-height: 1.5;
+    }
+
+    .muted { color: var(--muted); }
+    .subtle { color: var(--subtle); }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+    .mt-20 { margin-top: 20px; }
+    .mb-12 { margin-bottom: 12px; }
+    .w-100 { width: 100%; }
+    .hidden-file { display: none; }
+
+    .prototype-nav {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 32px;
+      border-bottom: 1px solid #e5e6eb;
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 1px 6px rgba(31, 35, 41, .04);
+      font-family: var(--font);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .prototype-nav__brand {
+      color: #1f2329;
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .prototype-nav__links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .prototype-nav__links a {
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 14px;
+      border-radius: 7px;
+      color: #646a73;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .prototype-nav__links a:hover {
+      color: #2f6bff;
+      background: #eef3ff;
+    }
+
+    .prototype-nav__links a.active {
+      color: #2f6bff;
+      background: #e8efff;
+    }
+
+    @media (max-width: 1360px) {
+      .skill-grid { grid-template-columns: repeat(2, minmax(280px, 1fr)); }
+      .edit-shell { grid-template-columns: 300px minmax(0, 1fr); }
+      .edit-shell.debug-collapsed { grid-template-columns: 300px minmax(0, 1fr); }
+      .edit-shell.debug-open { grid-template-columns: 1fr; }
+      .debug-panel,
+      .experience-panel {
+        grid-column: 1 / -1;
+        min-height: auto;
+        height: auto;
+        position: static;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+      .experience-workbench .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 920px) {
+      .page { padding: 22px 18px 36px; }
+      .topbar {
+        height: auto;
+        min-height: 72px;
+        padding: 14px 18px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .topbar-right { flex-wrap: wrap; }
+      .toolbar { flex-direction: column; }
+      .search-wrap { min-width: min(100%, 340px); width: 100%; }
+      .skill-grid { grid-template-columns: 1fr; }
+      .skill-card-head { grid-template-columns: 64px minmax(0, 1fr); }
+      .badge-stack { grid-column: 1 / -1; flex-direction: row; align-items: center; margin-left: 84px; }
+      .skill-meta { margin-left: 84px; }
+      .assistant-hero { grid-template-columns: 1fr; }
+      .avatar-illustration { display: none; }
+      .edit-shell { grid-template-columns: 1fr; }
+      .edit-shell.debug-collapsed { grid-template-columns: 1fr; }
+      .edit-shell.debug-open { grid-template-columns: 1fr; }
+      .assistant-panel { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .form-grid,
+      .file-panel,
+      .diff-grid,
+      .version-compare-card,
+      .version-mode-grid,
+      .experience-workbench .experience-body { grid-template-columns: 1fr; }
+      .file-tree { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+
+    @media (max-width: 560px) {
+      .skill-card { padding: 20px 16px 16px; }
+      .skill-meta, .badge-stack { margin-left: 0; }
+      .composer-footer,
+      .assistant-footer,
+      .debug-footer,
+      .modal-foot { flex-direction: column; align-items: stretch; }
+      .btn { width: 100%; }
+      .create-page { padding: 40px 16px; }
+      .assistant-hero h1 { font-size: 30px; }
+      .debug-drawer { top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="prototype-nav" aria-label="原型页面导航">
+    <div class="prototype-nav__brand">产品原型</div>
+    <div class="prototype-nav__links">
+      <a href="./mcp-page.html">MCP</a>
+      <a class="active" href="./skill.html">Skill</a>
+      <a href="./memory-prototype.html">记忆</a>
+    </div>
+  </nav>
+  <div id="app" class="app"></div>
+  <div id="modal-root"></div>
+  <div id="toast-root" class="toast-wrap"></div>
+
+  <script>
+    const icons = {
+      plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+      upload: '<svg viewBox="0 0 24 24"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg>',
+      download: '<svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M20 20H4"/></svg>',
+      search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+      back: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+      close: '<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      send: '<svg viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>',
+      save: '<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>',
+      flask: '<svg viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7 16h10"/></svg>',
+      spark: '<svg viewBox="0 0 24 24"><path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Z"/><path d="M19 15v4M17 17h4M5 4v3M3.5 5.5h3"/></svg>',
+      settings: '<svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.05.05a2 2 0 0 1-2.83 2.83l-.05-.05a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 0 1-4 0v-.07A1.7 1.7 0 0 0 8.97 19.4a1.7 1.7 0 0 0-1.88.34l-.05.05a2 2 0 0 1-2.83-2.83l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 0 1 0-4h.07A1.7 1.7 0 0 0 4.6 8.97a1.7 1.7 0 0 0-.34-1.88l-.05-.05a2 2 0 0 1 2.83-2.83l.05.05A1.7 1.7 0 0 0 8.97 4.6 1.7 1.7 0 0 0 10 3.07V3a2 2 0 0 1 4 0v.07A1.7 1.7 0 0 0 15.03 4.6a1.7 1.7 0 0 0 1.88-.34l.05-.05a2 2 0 0 1 2.83 2.83l-.05.05A1.7 1.7 0 0 0 19.4 8.97 1.7 1.7 0 0 0 20.93 10H21a2 2 0 0 1 0 4h-.07A1.7 1.7 0 0 0 19.4 15Z"/></svg>',
+      file: '<svg viewBox="0 0 24 24"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h6"/></svg>',
+      folder: '<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>',
+      history: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><path d="M12 7v5l3 2"/></svg>',
+      eye: '<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+      edit: '<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+      check: '<svg viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></svg>',
+      alert: '<svg viewBox="0 0 24 24"><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5M12 18h.01"/></svg>',
+      copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+      refresh: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2"/><path d="M3 12A9 9 0 0 1 18.5 5.8"/><path d="M18 2v4h4M6 22v-4H2"/></svg>',
+      image: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 15-5-5L5 19"/></svg>',
+      paperclip: '<svg viewBox="0 0 24 24"><path d="m21 11-9.5 9.5a6 6 0 0 1-8.5-8.5L13 2a4 4 0 1 1 5.7 5.7L8.7 17.7a2 2 0 0 1-2.8-2.8L15 5.7"/></svg>',
+      clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+    };
+
+    const icon = (name, cls = '') => `<span class="icon ${cls}">${icons[name] || ''}</span>`;
+
+    const state = {
+      route: 'list',
+      activeTab: 'all',
+      statusFilter: 'all',
+      query: '',
+      selectedExports: new Set(),
+      exportIds: null,
+      selectedSkillId: 'pdf-parser',
+      selectedFile: 'SKILL.md',
+      editTab: 'edit',
+      detailMode: 'view',
+      modal: null,
+      createPrompt: '',
+      createThinkingOn: true,
+      isComposing: false,
+      importItems: [],
+      deleteCandidateId: null,
+      rollbackSnapshot: null,
+      debugOpen: false,
+      versionAction: 'save',
+      versionSource: null,
+      compareVersionA: null,
+      compareVersionB: null,
+      rollbackTargetVersion: null,
+      experiencePage: 1,
+      optimizeDraft: null,
+      optimizeModel: 'ds-v4-codingplan',
+      optimizeRecordCount: 5
+    };
+
+    const officialRecords = [
+      {
+        id: 'call-101',
+        status: 'success',
+        userId: 'u-1024',
+        sessionId: 'sess-pdf-240604-001',
+        question: '解析这份基金招募说明书，输出表格里的费率。',
+        before: '用户上传 fund.pdf，并要求抽取费率表。Skill 读取 v1.0 的 PDF 表格解析规则。',
+        answer: '已识别 3 个费率表，建议在 reference.md 中补充表格合并规则。',
+        after: '输出 3 个费率表和页码引用，其中跨页表格给出合并提示。',
+        nextQuery: '把管理费率单独做成 Markdown 表格。',
+        duration: 3.8,
+        version: 'v1.0',
+        tokens: 12800,
+        time: '2026-06-04 15:06',
+        attachments: ['fund.pdf']
+      },
+      {
+        id: 'call-100',
+        status: 'failed',
+        userId: 'u-1025',
+        sessionId: 'sess-pdf-240604-002',
+        question: '把扫描版 PDF 的签章页提取出来。',
+        before: '用户上传 scan-contract.pdf。Skill 未命中扫描件 OCR 前置规则。',
+        answer: '失败原因：未声明图片型 PDF 的 OCR 前置策略。',
+        after: '返回失败原因：无法直接从图片层抽取签章页。',
+        nextQuery: '那先帮我判断哪些页面是扫描页。',
+        duration: 7.9,
+        version: 'v1.0',
+        tokens: 24800,
+        time: '2026-06-04 14:42',
+        attachments: ['scan-contract.pdf']
+      },
+      {
+        id: 'call-099',
+        status: 'success',
+        userId: 'u-1028',
+        sessionId: 'sess-pdf-240603-004',
+        question: '合并两个 PDF 并加目录。',
+        before: '用户上传 a.pdf、b.pdf，要求合并并生成目录页。',
+        answer: '生成了合并方案，但目录页码在跨文档合并时需要二次校准。',
+        after: '输出合并顺序、目录结构和页码校准说明。',
+        nextQuery: '目录页码按最终 PDF 重新计算。',
+        duration: 4.4,
+        version: 'v0.9',
+        tokens: 9200,
+        time: '2026-06-03 19:18',
+        attachments: ['a.pdf', 'b.pdf']
+      }
+    ];
+
+    const kangbroRecords = Array.from({ length: 12 }, (_, index) => {
+      const n = index + 1;
+      const success = index % 4 !== 1;
+      return {
+        id: `call-kang-${String(n).padStart(3, '0')}`,
+        status: success ? 'success' : 'failed',
+        userId: `u-${2100 + index}`,
+        sessionId: `sess-kang-260604-${String(n).padStart(3, '0')}`,
+        question: index % 3 === 0
+          ? '从产品经理视角点评这个方案的风险。'
+          : index % 3 === 1
+            ? '这段回复能不能更幽默但保持严谨？'
+            : '帮我把用户需求拆成可执行验收点。',
+        before: `调用前：Skill v1.0，用户正在和业务 Agent 对话，第 ${n} 次触发 kangbro。`,
+        answer: success
+          ? '输出了结构化观点：背景、判断、风险、建议动作，并保留了轻松语气。'
+          : '失败原因：用户问题缺少业务背景，无法判断方案边界。',
+        after: success
+          ? '调用后输出：3 条风险、2 条建议和一段可直接发送的产品经理口吻回复。'
+          : '调用后输出：提示补充业务目标、目标用户和上线约束。',
+        nextQuery: index % 2 === 0 ? '再压缩成 100 字以内。' : '',
+        duration: Number((2.1 + index * 0.23).toFixed(1)),
+        version: index < 7 ? 'v1.0' : 'v0.9',
+        tokens: 4200 + index * 360,
+        time: `2026-06-04 ${String(18 - Math.floor(index / 3)).padStart(2, '0')}:${String(55 - index * 3).padStart(2, '0')}:20`,
+        attachments: []
+      };
+    });
+
+    const skills = [
+      {
+        id: 'pdf-parser',
+        name: 'pdf解析',
+        desc: 'Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms.',
+        owner: 'MarketingAgent',
+        origin: 'official',
+        officialSource: '火山 data',
+        status: 'published',
+        enabled: true,
+        updated: '2026-06-04 15:09:02',
+        agent: '解析PDF',
+        version: 'v1.0',
+        tags: ['解析PDF', '表格抽取', 'OCR'],
+        supportedTypes: ['text', 'pdf', 'image'],
+        modelVision: true,
+        thinking: '标准',
+        files: {
+          'SKILL.md': '---\nname: pdf解析\ndescription: Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms.\n---\n\n# PDF 解析\n\n当用户上传 PDF 时，先判断文档类型：文本型、扫描型、表格密集型或表单型。\n\n## 流程\n1. 读取元信息、页数、是否包含图片层。\n2. 文本型 PDF 直接抽取结构化文本。\n3. 表格页优先保留表头和合并单元格关系。\n4. 扫描型 PDF 需要先进入 OCR，再输出置信度。\n\n## 输出\n- 摘要\n- 表格 JSON\n- 页码引用\n- 失败原因与重试建议\n',
+          'reference.md': '# Reference\n\n- 对跨页表格，合并前需要保留页码。\n- 输出表格时字段名使用中文原文，不做自动翻译。\n',
+          'forms.md': '# Forms\n\n识别表单字段时输出字段名、值、页码、置信度。\n',
+          'LICENSE.txt': 'Internal demo license.\n',
+          'scripts/parse_pdf.py': 'def parse_pdf(file):\n    return {"pages": 12, "tables": []}\n'
+        },
+        versions: [
+          { version: 'v1.0', time: '2026-06-04 15:09', status: '已发布' },
+          { version: 'v0.9', time: '2026-06-03 18:20', status: '历史版本' }
+        ],
+        records: officialRecords
+      },
+      {
+        id: 'excel-csv',
+        name: 'excel、csv解析',
+        desc: '读取 Excel、CSV、TSV 文件，自动识别表头、字段类型、空值、编码和多 Sheet 关系。',
+        owner: 'VolcanoData',
+        origin: 'official',
+        officialSource: '火山 data',
+        status: 'published',
+        enabled: true,
+        updated: '2026-06-04 13:22:40',
+        agent: '表格解析',
+        version: 'v1.2',
+        tags: ['Excel', 'CSV', '数据清洗'],
+        supportedTypes: ['text', 'excel', 'csv'],
+        modelVision: false,
+        thinking: '高',
+        files: {
+          'SKILL.md': '---\nname: excel、csv解析\ndescription: 读取 Excel、CSV、TSV 文件，自动识别表头、字段类型、空值、编码和多 Sheet 关系。\n---\n\n# Excel CSV 解析\n\n支持 xlsx、xls、csv、tsv 文件上传和解析。\n',
+          'schema.md': '# Schema\n\n输出字段：sheet、row_count、column_count、columns、quality_issues。\n'
+        },
+        versions: [{ version: 'v1.2', time: '2026-06-04 13:22', status: '已发布' }],
+        records: []
+      },
+      {
+        id: 'word-parser',
+        name: 'word解析',
+        desc: '解析 Word 文档中的标题层级、段落、表格、批注和修订记录，输出可引用结构。',
+        owner: 'VolcanoData',
+        origin: 'official',
+        officialSource: '火山 data',
+        status: 'published',
+        enabled: true,
+        updated: '2026-06-04 11:40:01',
+        agent: '文档解析',
+        version: 'v1.0',
+        tags: ['Word', '段落结构', '修订'],
+        supportedTypes: ['text', 'word'],
+        modelVision: false,
+        thinking: '标准',
+        files: {
+          'SKILL.md': '---\nname: word解析\ndescription: 解析 Word 文档中的标题层级、段落、表格、批注和修订记录，输出可引用结构。\n---\n\n# Word 解析\n\n解析 docx 文档并输出结构化 JSON。\n'
+        },
+        versions: [{ version: 'v1.0', time: '2026-06-04 11:40', status: '已发布' }],
+        records: []
+      },
+      {
+        id: 'image-video',
+        name: '图片、视频生成',
+        desc: '根据品牌规范和用户意图生成图片、视频脚本和分镜，支持图片理解模型接收参考图。',
+        owner: 'VolcanoData',
+        origin: 'official',
+        officialSource: '火山 data',
+        status: 'published',
+        enabled: true,
+        updated: '2026-06-04 10:02:23',
+        agent: '生成助手',
+        version: 'v1.0',
+        tags: ['图片生成', '视频生成', '参考图'],
+        supportedTypes: ['text', 'image'],
+        modelVision: true,
+        thinking: '高',
+        files: {
+          'SKILL.md': '---\nname: 图片、视频生成\ndescription: 根据品牌规范和用户意图生成图片、视频脚本和分镜，支持图片理解模型接收参考图。\n---\n\n# 图片视频生成\n\n当模型支持图片理解时，可接收参考图并在 A2A 链路中传递图片资产。\n'
+        },
+        versions: [{ version: 'v1.0', time: '2026-06-04 10:02', status: '已发布' }],
+        records: []
+      },
+      {
+        id: 'open-search',
+        name: 'open search',
+        desc: '开放搜索 Skill，支持面向实时信息、知识库和指定站点的搜索策略编排。',
+        owner: 'VolcanoData',
+        origin: 'official',
+        officialSource: '火山 data',
+        status: 'published',
+        enabled: true,
+        updated: '2026-06-03 20:12:14',
+        agent: '搜索助手',
+        version: 'v1.0',
+        tags: ['搜索', '实时信息'],
+        supportedTypes: ['text'],
+        modelVision: false,
+        thinking: '标准',
+        files: { 'SKILL.md': '---\nname: open search\ndescription: 开放搜索 Skill，支持面向实时信息、知识库和指定站点的搜索策略编排。\n---\n\n# Open Search\n' },
+        versions: [{ version: 'v1.0', time: '2026-06-03 20:12', status: '已发布' }],
+        records: []
+      },
+      {
+        id: 'web-fetch',
+        name: 'Web fetch',
+        desc: '抓取网页内容并转换成结构化上下文，支持来源标注、正文抽取和失败重试。',
+        owner: 'VolcanoData',
+        origin: 'official',
+        officialSource: '火山 data',
+        status: 'published',
+        enabled: true,
+        updated: '2026-06-03 19:58:30',
+        agent: '网页助手',
+        version: 'v1.0',
+        tags: ['网页读取', '来源标注'],
+        supportedTypes: ['text'],
+        modelVision: false,
+        thinking: '低',
+        files: { 'SKILL.md': '---\nname: Web fetch\ndescription: 抓取网页内容并转换成结构化上下文，支持来源标注、正文抽取和失败重试。\n---\n\n# Web Fetch\n' },
+        versions: [{ version: 'v1.0', time: '2026-06-03 19:58', status: '已发布' }],
+        records: []
+      },
+      {
+        id: 'kangbro',
+        name: 'kangbro',
+        desc: '韩康数字分身。当用户想问康康会怎么看这个事，需要逻辑严谨且幽默的产品经理视角。',
+        owner: 'MarketingAgent',
+        origin: 'mine',
+        status: 'draft',
+        enabled: false,
+        updated: '2026-06-04 18:46:03',
+        agent: '暂无绑定 Agent',
+        version: 'v1.4',
+        tags: ['产品视角', '数字分身'],
+        supportedTypes: ['text'],
+        modelVision: false,
+        thinking: '标准',
+        files: {
+          'SKILL.md': '---\nname: kangbro\ndescription: 韩康数字分身。当用户想问康康会怎么看这个事，需要逻辑严谨且幽默的产品经理视角。\n---\n\n# kangbro\n\n## 使用场景\n- 评审产品方案、需求拆解、上线风险和沟通表达。\n- 当用户只问“康康怎么看”时，先追问业务背景、目标用户和约束。\n\n## 输出规则\n1. 先给一句明确判断。\n2. 再输出背景、风险、建议动作。\n3. 允许轻松幽默，但不得牺牲逻辑严谨性。\n',
+          'response-style.md': '# Response Style\n\n- 语气：像资深产品经理，清楚、直接、有一点幽默。\n- 避免空泛鼓励，优先指出关键假设。\n',
+          'risk-checklist.md': '# Risk Checklist\n\n- 目标用户是否明确。\n- 成功指标是否可量化。\n- 是否存在上线依赖和灰度策略。\n'
+        },
+        versions: [
+          {
+            version: 'v1.4',
+            time: '2026-06-04 18:46',
+            desc: '补充追问规则和风险检查清单，等待发布。',
+            creator: 'MarketingAgent',
+            status: '草稿',
+            files: {
+              'SKILL.md': '---\nname: kangbro\ndescription: 韩康数字分身。当用户想问康康会怎么看这个事，需要逻辑严谨且幽默的产品经理视角。\n---\n\n# kangbro\n\n## 使用场景\n- 评审产品方案、需求拆解、上线风险和沟通表达。\n- 当用户只问“康康怎么看”时，先追问业务背景、目标用户和约束。\n\n## 输出规则\n1. 先给一句明确判断。\n2. 再输出背景、风险、建议动作。\n3. 允许轻松幽默，但不得牺牲逻辑严谨性。\n',
+              'response-style.md': '# Response Style\n\n- 语气：像资深产品经理，清楚、直接、有一点幽默。\n- 避免空泛鼓励，优先指出关键假设。\n',
+              'risk-checklist.md': '# Risk Checklist\n\n- 目标用户是否明确。\n- 成功指标是否可量化。\n- 是否存在上线依赖和灰度策略。\n'
+            }
+          },
+          {
+            version: 'v1.3',
+            time: '2026-06-04 17:12',
+            desc: '优化失败时的追问模板，减少直接输出空结论。',
+            creator: 'MarketingAgent',
+            status: '草稿',
+            files: {
+              'SKILL.md': '---\nname: kangbro\ndescription: 韩康数字分身。当用户想问康康会怎么看这个事，需要逻辑严谨且幽默的产品经理视角。\n---\n\n# kangbro\n\n## 使用场景\n- 评审产品方案、需求拆解、上线风险和沟通表达。\n\n## 输出规则\n1. 先给一句明确判断。\n2. 再输出背景、风险、建议动作。\n3. 信息不足时，追问业务背景、目标用户和约束。\n',
+              'response-style.md': '# Response Style\n\n- 语气：像资深产品经理，清楚、直接、有一点幽默。\n- 避免空泛鼓励，优先指出关键假设。\n'
+            }
+          },
+          {
+            version: 'v1.2',
+            time: '2026-06-04 15:38',
+            desc: '新增回复风格文件，强化产品经理表达。',
+            creator: 'MarketingAgent',
+            status: '草稿',
+            files: {
+              'SKILL.md': '---\nname: kangbro\ndescription: 韩康数字分身，输出产品经理视角。\n---\n\n# kangbro\n\n## 使用场景\n- 评审产品方案、需求拆解、上线风险和沟通表达。\n\n## 输出规则\n1. 先给一句明确判断。\n2. 再输出背景、风险、建议动作。\n',
+              'response-style.md': '# Response Style\n\n- 语气：像资深产品经理，清楚、直接、有一点幽默。\n'
+            }
+          },
+          {
+            version: 'v1.1',
+            time: '2026-06-04 12:20',
+            desc: '发布产品经理视角版本。',
+            creator: 'MarketingAgent',
+            status: '已发布',
+            files: {
+              'SKILL.md': '---\nname: kangbro\ndescription: 韩康数字分身，输出产品经理视角。\n---\n\n# kangbro\n\n## 输出规则\n1. 先给一句明确判断。\n2. 再输出背景、风险、建议动作。\n'
+            }
+          },
+          {
+            version: 'v1.0',
+            time: '2026-06-04 10:54',
+            desc: '初始化数字分身 Skill。',
+            creator: 'MarketingAgent',
+            status: '',
+            files: {
+              'SKILL.md': '---\nname: kangbro\ndescription: 韩康数字分身，输出产品经理视角。\n---\n\n# kangbro\n'
+            }
+          },
+          {
+            version: 'v0.9',
+            time: '2026-06-03 19:30',
+            desc: 'POC 草稿，只有基础说明。',
+            creator: 'MarketingAgent',
+            status: '',
+            files: {
+              'SKILL.md': '# kangbro POC\n\n用于验证产品经理口吻。\n'
+            }
+          }
+        ],
+        records: kangbroRecords
+      },
+      {
+        id: 'fuzhou-weather',
+        name: '福州天气skill',
+        desc: '查询福州市天气信息，支持查询当前天气、未来几日每日预报、逐小时预报。',
+        owner: 'MarketingAgent',
+        origin: 'mine',
+        status: 'draft',
+        enabled: false,
+        updated: '2026-06-02 11:26:52',
+        agent: '暂无绑定 Agent',
+        version: 'v0.2',
+        tags: ['天气', 'API'],
+        supportedTypes: ['text'],
+        modelVision: false,
+        thinking: '低',
+        files: { 'SKILL.md': '' },
+        versions: [{ version: 'v0.2', time: '2026-06-02 11:26', status: '草稿' }],
+        records: []
+      },
+      {
+        id: 'reply-skill',
+        name: '友好回复skill',
+        desc: '以友好、热情、专业的语气回复客户消息。当客户打招呼、提问、表达感谢或需要帮助时使用。',
+        owner: 'MarketingAgent',
+        origin: 'mine',
+        status: 'published',
+        enabled: true,
+        updated: '2026-06-01 18:10:50',
+        agent: '暂无绑定 Agent',
+        version: 'v1.0',
+        tags: ['客服回复', '语气'],
+        supportedTypes: ['text'],
+        modelVision: false,
+        thinking: '标准',
+        files: { 'SKILL.md': '---\nname: 友好回复skill\ndescription: 以友好、热情、专业的语气回复客户消息。\n---\n\n# 友好回复\n' },
+        versions: [{ version: 'v1.0', time: '2026-06-01 18:10', status: '已发布' }],
+        records: []
+      }
+    ];
+
+    const versionMockData = {
+      'pdf-parser': [
+        {
+          version: 'v1.2',
+          time: '2026-06-04 16:30',
+          desc: '补充扫描件 OCR 前置策略和表单字段置信度输出。',
+          status: '已发布',
+          files: {
+            'SKILL.md': `---
+name: pdf解析
+description: Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms.
+---
+
+# PDF 解析
+
+当用户上传 PDF 时，先判断文档类型：文本型、扫描型、表格密集型、表单型或扫描型。
+
+## 流程
+1. 读取元信息、页数、是否包含图片层。
+2. 文本型 PDF 直接抽取结构化文本。
+3. 表格页优先保留表头、合并单元格和跨页关系。
+4. 扫描型 PDF 需要先进入 OCR，再输出置信度。
+5. 表单型 PDF 需要输出字段名、值、页码和字段置信度。
+
+## 输出
+- 摘要
+- 表格 JSON
+- 页码引用
+- 失败原因与重试建议
+`,
+            'reference.md': '# Reference\n\n- 对跨页表格，合并前需要保留页码。\n- 输出表格时字段名使用中文原文，不做自动翻译。\n- 扫描件需要先判断 OCR 置信度，低于阈值时提示用户补充高清文件。\n',
+            'forms.md': '# Forms\n\n识别表单字段时输出字段名、值、页码、置信度和是否需要人工复核。\n',
+            'ocr-rules.md': '# OCR Rules\n\n- 优先识别印刷体文字。\n- 对签章页输出扫描页判断。\n- 低置信度页面需要返回重试建议。\n',
+            'LICENSE.txt': 'Internal demo license.\n',
+            'scripts/parse_pdf.py': 'def parse_pdf(file, enable_ocr=True):\n    return {"pages": 12, "tables": [], "ocr": enable_ocr}\n'
+          }
+        },
+        {
+          version: 'v1.1',
+          time: '2026-06-04 09:42',
+          desc: '新增表单字段抽取说明和跨页表格合并规则。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: pdf解析
+description: Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms.
+---
+
+# PDF 解析
+
+当用户上传 PDF 时，先判断文档类型：文本型、表格密集型或表单型。
+
+## 流程
+1. 读取元信息和页数。
+2. 文本型 PDF 直接抽取结构化文本。
+3. 表格页优先保留表头和合并单元格关系。
+4. 表单型 PDF 需要输出字段名、值和页码。
+
+## 输出
+- 摘要
+- 表格 JSON
+- 页码引用
+`,
+            'reference.md': '# Reference\n\n- 对跨页表格，合并前需要保留页码。\n- 输出表格时字段名使用中文原文，不做自动翻译。\n',
+            'forms.md': '# Forms\n\n识别表单字段时输出字段名、值、页码。\n',
+            'LICENSE.txt': 'Internal demo license.\n',
+            'scripts/parse_pdf.py': 'def parse_pdf(file):\n    return {"pages": 12, "tables": []}\n'
+          }
+        },
+        {
+          version: 'v1.0',
+          time: '2026-06-03 18:20',
+          desc: '初始化 PDF 文本和表格解析能力。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: pdf解析
+description: Comprehensive PDF manipulation toolkit for extracting text and tables.
+---
+
+# PDF 解析
+
+当用户上传 PDF 时，抽取文本和表格。
+
+## 输出
+- 摘要
+- 表格 JSON
+`,
+            'reference.md': '# Reference\n\n- 输出表格时字段名使用中文原文。\n',
+            'LICENSE.txt': 'Internal demo license.\n'
+          }
+        }
+      ],
+      'excel-csv': [
+        {
+          version: 'v1.4',
+          time: '2026-06-04 14:20',
+          desc: '新增多 Sheet 关系识别、字段质量规则和 CSV 编码兜底。',
+          status: '已发布',
+          files: {
+            'SKILL.md': `---
+name: excel、csv解析
+description: 读取 Excel、CSV、TSV 文件，自动识别表头、字段类型、空值、编码和多 Sheet 关系。
+---
+
+# Excel CSV 解析
+
+支持 xlsx、xls、csv、tsv 文件上传和解析。
+
+## 处理流程
+1. 自动判断文件编码、分隔符和表头行。
+2. 多 Sheet 文件需要识别主表、维表和可能的关联键。
+3. 输出字段类型、空值、重复记录和异常值。
+4. CSV 编码失败时需要尝试 UTF-8、GBK 和 UTF-16。
+`,
+            'schema.md': '# Schema\n\n输出字段：sheet、row_count、column_count、columns、quality_issues、relations。\n',
+            'quality-rules.md': '# Quality Rules\n\n- 空值比例超过 30% 时标记风险。\n- 日期列需要识别多种格式。\n- 数值列需要输出异常区间。\n',
+            'examples/sample.csv': 'city,temp,date\nFuzhou,31,2026-06-04\n'
+          }
+        },
+        {
+          version: 'v1.3',
+          time: '2026-06-04 11:18',
+          desc: '补充质量检查规则和异常值识别。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: excel、csv解析
+description: 读取 Excel、CSV、TSV 文件，自动识别表头、字段类型、空值和编码。
+---
+
+# Excel CSV 解析
+
+支持 xlsx、xls、csv、tsv 文件上传和解析。
+
+## 处理流程
+1. 自动判断文件编码、分隔符和表头行。
+2. 输出字段类型、空值、重复记录和异常值。
+`,
+            'schema.md': '# Schema\n\n输出字段：sheet、row_count、column_count、columns、quality_issues。\n',
+            'quality-rules.md': '# Quality Rules\n\n- 空值比例超过 30% 时标记风险。\n- 数值列需要输出异常区间。\n'
+          }
+        },
+        {
+          version: 'v1.2',
+          time: '2026-06-04 13:22',
+          desc: '发布表头和字段类型识别版本。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: excel、csv解析
+description: 读取 Excel、CSV、TSV 文件，自动识别表头、字段类型、空值、编码和多 Sheet 关系。
+---
+
+# Excel CSV 解析
+
+支持 xlsx、xls、csv、tsv 文件上传和解析。
+`,
+            'schema.md': '# Schema\n\n输出字段：sheet、row_count、column_count、columns、quality_issues。\n'
+          }
+        },
+        {
+          version: 'v1.1',
+          time: '2026-06-03 17:05',
+          desc: 'POC：仅支持 CSV 基础读取。',
+          status: '',
+          files: {
+            'SKILL.md': '# CSV 解析\n\n读取 CSV 并输出字段列表。\n'
+          }
+        }
+      ],
+      'word-parser': [
+        {
+          version: 'v1.3',
+          time: '2026-06-04 12:08',
+          desc: '新增批注、修订记录和标题层级稳定输出。',
+          status: '已发布',
+          files: {
+            'SKILL.md': `---
+name: word解析
+description: 解析 Word 文档中的标题层级、段落、表格、批注和修订记录，输出可引用结构。
+---
+
+# Word 解析
+
+解析 docx 文档并输出结构化 JSON。
+
+## 输出要求
+- 标题层级
+- 段落正文
+- 表格结构
+- 批注和修订记录
+- 可引用的段落编号
+`,
+            'schema.md': '# Schema\n\n字段：heading_path、paragraphs、tables、comments、revisions、references。\n',
+            'revision-rules.md': '# Revision Rules\n\n- 保留删除、插入和替换类型。\n- 批注需要关联到段落编号。\n'
+          }
+        },
+        {
+          version: 'v1.2',
+          time: '2026-06-04 09:55',
+          desc: '补充表格结构输出。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: word解析
+description: 解析 Word 文档中的标题层级、段落和表格，输出可引用结构。
+---
+
+# Word 解析
+
+解析 docx 文档并输出结构化 JSON。
+
+## 输出要求
+- 标题层级
+- 段落正文
+- 表格结构
+`,
+            'schema.md': '# Schema\n\n字段：heading_path、paragraphs、tables、references。\n'
+          }
+        },
+        {
+          version: 'v1.1',
+          time: '2026-06-03 21:40',
+          desc: '补充标题层级和段落引用。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: word解析
+description: 解析 Word 文档中的标题层级和段落，输出可引用结构。
+---
+
+# Word 解析
+
+解析 docx 文档标题和段落。
+`,
+            'schema.md': '# Schema\n\n字段：heading_path、paragraphs、references。\n'
+          }
+        },
+        {
+          version: 'v1.0',
+          time: '2026-06-03 15:10',
+          desc: '初始化 Word 段落解析。',
+          status: '',
+          files: {
+            'SKILL.md': '# Word 解析\n\n解析 docx 文档并输出纯文本段落。\n'
+          }
+        }
+      ],
+      'image-video': [
+        {
+          version: 'v1.2',
+          time: '2026-06-04 10:52',
+          desc: '新增参考图理解、分镜输出和品牌规范约束。',
+          status: '已发布',
+          files: {
+            'SKILL.md': `---
+name: 图片、视频生成
+description: 根据品牌规范和用户意图生成图片、视频脚本和分镜，支持图片理解模型接收参考图。
+---
+
+# 图片视频生成
+
+当模型支持图片理解时，可接收参考图并在 A2A 链路中传递图片资产。
+
+## 输出
+- 图片提示词
+- 视频脚本
+- 分镜列表
+- 品牌一致性检查
+`,
+            'prompt-guide.md': '# Prompt Guide\n\n- 描述主体、风格、镜头、材质和禁用元素。\n- 参考图必须说明保留和可变更部分。\n',
+            'storyboard.md': '# Storyboard\n\n每个镜头输出：时长、画面、动作、旁白、转场。\n'
+          }
+        },
+        {
+          version: 'v1.1',
+          time: '2026-06-03 22:18',
+          desc: '补充视频脚本和分镜模板。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: 图片、视频生成
+description: 根据品牌规范和用户意图生成图片、视频脚本和分镜。
+---
+
+# 图片视频生成
+
+根据用户意图生成图片提示词和视频分镜。
+`,
+            'prompt-guide.md': '# Prompt Guide\n\n- 描述主体、风格、镜头和材质。\n',
+            'storyboard.md': '# Storyboard\n\n每个镜头输出：时长、画面、动作、旁白。\n'
+          }
+        },
+        {
+          version: 'v1.0',
+          time: '2026-06-03 16:44',
+          desc: '初始化图片生成提示词。',
+          status: '',
+          files: {
+            'SKILL.md': '# 图片生成\n\n根据用户意图生成图片提示词。\n',
+            'prompt-guide.md': '# Prompt Guide\n\n- 描述主体和风格。\n'
+          }
+        }
+      ],
+      'open-search': [
+        {
+          version: 'v1.3',
+          time: '2026-06-04 09:35',
+          desc: '新增指定站点策略、来源可信度和结果排序。',
+          status: '已发布',
+          files: {
+            'SKILL.md': `---
+name: open search
+description: 开放搜索 Skill，支持面向实时信息、知识库和指定站点的搜索策略编排。
+---
+
+# Open Search
+
+根据用户问题选择实时搜索、知识库搜索或指定站点搜索。
+
+## 策略
+1. 识别用户是否需要最新信息。
+2. 优先使用指定站点和可信来源。
+3. 输出来源、摘要、置信度和下一步建议。
+`,
+            'source-policy.md': '# Source Policy\n\n- 官方站点优先。\n- 新闻类信息需要标注发布时间。\n- 不可信来源需要降权。\n',
+            'ranking.md': '# Ranking\n\n排序因素：相关性、时效性、权威性、可引用性。\n'
+          }
+        },
+        {
+          version: 'v1.2',
+          time: '2026-06-03 22:02',
+          desc: '补充来源可信度规则。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: open search
+description: 开放搜索 Skill，支持面向实时信息、知识库和指定站点的搜索策略编排。
+---
+
+# Open Search
+
+根据用户问题选择实时搜索或知识库搜索。
+`,
+            'source-policy.md': '# Source Policy\n\n- 官方站点优先。\n- 新闻类信息需要标注发布时间。\n'
+          }
+        },
+        {
+          version: 'v1.1',
+          time: '2026-06-03 20:12',
+          desc: '发布实时搜索基础策略。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: open search
+description: 开放搜索 Skill，支持面向实时信息的搜索策略编排。
+---
+
+# Open Search
+
+根据用户问题选择实时搜索。
+`
+          }
+        }
+      ],
+      'web-fetch': [
+        {
+          version: 'v1.2',
+          time: '2026-06-04 08:58',
+          desc: '新增正文抽取、失败重试和来源标注规则。',
+          status: '已发布',
+          files: {
+            'SKILL.md': `---
+name: Web fetch
+description: 抓取网页内容并转换成结构化上下文，支持来源标注、正文抽取和失败重试。
+---
+
+# Web Fetch
+
+抓取网页内容并转换为可供 Agent 使用的结构化上下文。
+
+## 输出
+- 标题
+- 正文摘要
+- 关键片段
+- 来源 URL
+- 抓取失败原因
+`,
+            'extraction.md': '# Extraction\n\n- 优先抽取正文区域。\n- 保留标题、发布时间和作者。\n- 过滤导航、广告和推荐列表。\n',
+            'retry.md': '# Retry\n\n- 403 时提示用户提供可访问链接。\n- 超时后重试 2 次。\n'
+          }
+        },
+        {
+          version: 'v1.1',
+          time: '2026-06-03 21:05',
+          desc: '补充正文抽取规则。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: Web fetch
+description: 抓取网页内容并转换成结构化上下文，支持来源标注。
+---
+
+# Web Fetch
+
+抓取网页内容并转换为结构化上下文。
+`,
+            'extraction.md': '# Extraction\n\n- 优先抽取正文区域。\n- 保留标题和发布时间。\n'
+          }
+        },
+        {
+          version: 'v1.0',
+          time: '2026-06-03 19:58',
+          desc: '初始化网页抓取。',
+          status: '',
+          files: {
+            'SKILL.md': '# Web Fetch\n\n抓取网页并输出正文。\n'
+          }
+        }
+      ],
+      'fuzhou-weather': [
+        {
+          version: 'v0.4',
+          time: '2026-06-02 16:45',
+          desc: '新增逐小时预报、失败兜底和 API 字段说明。',
+          status: '草稿',
+          files: {
+            'SKILL.md': `---
+name: 福州天气skill
+description: 查询福州市天气信息，支持查询当前天气、未来几日每日预报、逐小时预报。
+---
+
+# 福州天气 Skill
+
+当用户询问福州市天气时，返回当前天气、未来几日预报和逐小时预报。
+
+## 输出
+- 当前温度
+- 天气现象
+- 未来 3 天天气
+- 逐小时降雨概率
+- 数据源异常时的兜底说明
+`,
+            'api.md': '# API\n\n数据源：wtr.in 备用免费 API。\n字段：temp、condition、hourly、rain_probability。\n',
+            'examples.md': '# Examples\n\n用户：今天福州会下雨吗？\n输出：当前天气、降雨概率、建议携带雨具。\n'
+          }
+        },
+        {
+          version: 'v0.3',
+          time: '2026-06-02 14:18',
+          desc: '补充未来几日预报。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: 福州天气skill
+description: 查询福州市天气信息，支持查询当前天气和未来几日每日预报。
+---
+
+# 福州天气 Skill
+
+返回当前天气和未来 3 天天气。
+`,
+            'api.md': '# API\n\n数据源：wtr.in 备用免费 API。\n字段：temp、condition、forecast。\n'
+          }
+        },
+        {
+          version: 'v0.2',
+          time: '2026-06-02 11:26',
+          desc: '初始化当前天气查询。',
+          status: '',
+          files: {
+            'SKILL.md': '# 福州天气 Skill\n\n查询福州市当前天气。\n',
+            'api.md': '# API\n\n字段：temp、condition。\n'
+          }
+        }
+      ],
+      'reply-skill': [
+        {
+          version: 'v1.2',
+          time: '2026-06-01 20:30',
+          desc: '新增场景模板、语气边界和升级人工规则。',
+          status: '已发布',
+          files: {
+            'SKILL.md': `---
+name: 友好回复skill
+description: 以友好、热情、专业的语气回复客户消息。当客户打招呼、提问、表达感谢或需要帮助时使用。
+---
+
+# 友好回复
+
+用于客户消息回复，保持友好、热情、专业。
+
+## 规则
+1. 先回应用户情绪或问题。
+2. 再给出明确下一步。
+3. 无法处理时升级人工。
+`,
+            'tone.md': '# Tone\n\n- 友好但不过度热情。\n- 避免承诺无法确认的结果。\n- 对投诉先表达理解，再说明处理路径。\n',
+            'scenarios.md': '# Scenarios\n\n- 打招呼\n- 询问进度\n- 表达感谢\n- 投诉或催促\n'
+          }
+        },
+        {
+          version: 'v1.1',
+          time: '2026-06-01 19:12',
+          desc: '补充语气规则。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: 友好回复skill
+description: 以友好、热情、专业的语气回复客户消息。
+---
+
+# 友好回复
+
+用于客户消息回复，保持友好、热情、专业。
+`,
+            'tone.md': '# Tone\n\n- 友好但不过度热情。\n- 避免承诺无法确认的结果。\n'
+          }
+        },
+        {
+          version: 'v1.0',
+          time: '2026-06-01 18:10',
+          desc: '初始化客服友好回复。',
+          status: '',
+          files: {
+            'SKILL.md': `---
+name: 友好回复skill
+description: 以友好、热情、专业的语气回复客户消息。
+---
+
+# 友好回复
+`
+          }
+        }
+      ]
+    };
+
+    hydrateVersionMockData();
+
+    function hydrateVersionMockData() {
+      Object.entries(versionMockData).forEach(([id, versions]) => {
+        const skill = skills.find(item => item.id === id);
+        if (!skill || !versions.length) return;
+        const latest = versions[0];
+        skill.version = latest.version;
+        skill.updated = latest.time;
+        skill.status = latest.status === '已发布' ? 'published' : 'draft';
+        skill.enabled = latest.status === '已发布';
+        skill.files = cloneFiles(latest.files);
+        skill.versions = versions.map(item => ({
+          ...item,
+          creator: item.creator || skill.owner || 'MarketingAgent',
+          files: cloneFiles(item.files)
+        }));
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    function getSkill() {
+      return skills.find(item => item.id === state.selectedSkillId) || skills[0];
+    }
+
+    function isOfficial(skill) {
+      return skill.origin === 'official';
+    }
+
+    function metric(records) {
+      const total = records.length;
+      const completed = records.filter(item => item.status === 'success' || item.status === 'failed');
+      const success = records.filter(item => item.status === 'success').length;
+      const avg = completed.length
+        ? (completed.reduce((sum, item) => sum + item.duration, 0) / completed.length).toFixed(1)
+        : '-';
+      return {
+        total,
+        completed: completed.length,
+        success,
+        successRate: completed.length ? Math.round(success / completed.length * 100) + '%' : '-',
+        avg
+      };
+    }
+
+    function hasSkillDocContent(skill) {
+      return !!String(skill.files?.['SKILL.md'] || '').trim();
+    }
+
+    function parseSkillMarkdownMeta(markdown) {
+      const text = String(markdown || '');
+      const match = text.match(/^---\n([\s\S]*?)\n---/);
+      if (!match) return {};
+      const meta = {};
+      match[1].split('\n').forEach(line => {
+        const index = line.indexOf(':');
+        if (index <= 0) return;
+        const key = line.slice(0, index).trim();
+        const value = line.slice(index + 1).trim();
+        if (key === 'name' || key === 'description') meta[key] = value;
+      });
+      return meta;
+    }
+
+    function applyMarkdownMetaToSkill(skill) {
+      const meta = parseSkillMarkdownMeta(skill.files?.['SKILL.md']);
+      if (meta.name) skill.name = meta.name;
+      if (meta.description) skill.desc = meta.description;
+      const nameField = document.querySelector?.('[data-field="name"]');
+      const descField = document.querySelector?.('[data-field="desc"]');
+      if (nameField) nameField.value = skill.name;
+      if (descField) descField.value = skill.desc;
+    }
+
+    function captureSkillSnapshot(skill) {
+      return {
+        name: skill.name,
+        desc: skill.desc,
+        files: cloneFiles(skill.files),
+        selectedFile: state.selectedFile,
+        dirty: !!skill.dirty
+      };
+    }
+
+    function applySkillSnapshot(skill, snapshot) {
+      if (!snapshot) return;
+      skill.name = snapshot.name;
+      skill.desc = snapshot.desc;
+      skill.files = cloneFiles(snapshot.files);
+      state.selectedFile = snapshot.selectedFile || 'SKILL.md';
+      skill.dirty = !!snapshot.dirty;
+      document.querySelectorAll('[data-dirty-indicator]').forEach(node => {
+        node.className = `badge ${skill.dirty ? 'orange' : 'green'}`;
+        node.textContent = skill.dirty ? '未保存变更' : '已保存';
+      });
+    }
+
+    function applyAiDraft(skill, files, options = {}) {
+      skill.aiUndoSnapshot = captureSkillSnapshot(skill);
+      skill.files = { ...cloneFiles(skill.files), ...cloneFiles(files) };
+      state.selectedFile = options.selectedFile || 'SKILL.md';
+      applyMarkdownMetaToSkill(skill);
+      markDirty(skill);
+    }
+
+    function clearTransientDebug(skill) {
+      if (skill) skill.debugMessages = [];
+      state.debugOpen = false;
+    }
+
+    function skillStatusBadge(skill) {
+      if (skill.status === 'published') {
+        return '<span class="badge blue"><span class="dot"></span>已发布</span>';
+      }
+      return '<span class="badge"><span class="dot"></span>未发布</span>';
+    }
+
+    function originBadge(skill) {
+      if (skill.origin === 'official') return '<span class="badge green">官方 Skill</span>';
+      if (skill.origin === 'imported') return '<span class="badge orange">导入 Skill</span>';
+      return '<span class="badge">我的 Skill</span>';
+    }
+
+    function renderThinkingSwitch(isOn, action) {
+      return `
+        <button class="btn btn-ghost" data-action="${action}">
+          <span class="switch ${isOn ? 'on' : ''}" aria-hidden="true"></span>
+          思考${isOn ? '开启' : '关闭'}
+        </button>
+      `;
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      if (state.route === 'edit') app.innerHTML = renderEdit();
+      else app.innerHTML = renderList();
+      renderModal();
+    }
+
+    function renderList() {
+      const filtered = skills.filter(skill => {
+        const tabOk = state.activeTab === 'all'
+          || (state.activeTab === 'mine' && skill.origin !== 'official')
+          || (state.activeTab === 'official' && skill.origin === 'official');
+        const statusOk = state.statusFilter === 'all' || skill.status === state.statusFilter || (state.statusFilter === 'enabled' && skill.enabled);
+        const query = state.query.trim().toLowerCase();
+        const queryOk = !query || [skill.name, skill.desc, skill.owner, skill.agent, skill.tags.join(' ')].join(' ').toLowerCase().includes(query);
+        return tabOk && statusOk && queryOk;
+      });
+
+      return `
+        <header class="topbar">
+          <div class="title-stack">
+            <h1>Skill中心</h1>
+            <p>Skill 是平台中可复用的能力单元，在 MCP 工具之上沉淀为可编辑、可测试、可复用的标准能力资产。</p>
+          </div>
+          <div class="topbar-right">
+            <button class="btn btn-primary" data-action="openCreate">${icon('spark')}对话创建 Skill</button>
+            <button class="btn" data-action="manualCreate">${icon('plus')}手动创建 Skill</button>
+            <button class="btn" data-action="openImport">${icon('upload')}导入 Skill</button>
+            <button class="btn" data-action="openExport" ${state.selectedExports.size ? '' : 'disabled'}>${icon('download')}导出已选</button>
+          </div>
+        </header>
+
+        <main class="page">
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <div class="tabs" role="tablist" aria-label="Skill 分类">
+                ${['all', 'mine', 'official'].map(tab => `
+                  <button class="tab ${state.activeTab === tab ? 'active' : ''}" data-action="setTab" data-tab="${tab}">
+                    ${tab === 'all' ? '全部' : tab === 'mine' ? '我的' : '官方 Skill'}
+                  </button>
+                `).join('')}
+              </div>
+              <select class="control" data-action="statusFilter" aria-label="状态筛选">
+                <option value="all" ${state.statusFilter === 'all' ? 'selected' : ''}>全部状态</option>
+                <option value="enabled" ${state.statusFilter === 'enabled' ? 'selected' : ''}>已开启</option>
+                <option value="published" ${state.statusFilter === 'published' ? 'selected' : ''}>已发布</option>
+                <option value="draft" ${state.statusFilter === 'draft' ? 'selected' : ''}>未发布</option>
+              </select>
+              <div class="search-wrap">
+                <input class="search" data-action="search" value="${escapeHtml(state.query)}" placeholder="请输入关键词进行搜索">
+                ${icon('search')}
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <span class="muted">共 ${filtered.length} 个，官方 ${skills.filter(isOfficial).length} 个</span>
+            </div>
+          </div>
+
+          <div class="bulk-bar ${state.selectedExports.size ? 'active' : ''}">
+            <span>已选择 ${state.selectedExports.size} 个 Skill，可批量导出为独立包。</span>
+            <div class="inline">
+              <button class="btn btn-soft" data-action="selectAllVisible" data-ids="${filtered.map(s => s.id).join(',')}">选择当前页</button>
+              <button class="btn" data-action="clearSelected">清空</button>
+              <button class="btn btn-primary" data-action="openExport">${icon('download')}导出 ${state.selectedExports.size} 个包</button>
+            </div>
+          </div>
+
+          ${filtered.length ? `
+            <section class="skill-grid">
+              ${filtered.map(renderSkillCard).join('')}
+            </section>
+          ` : `
+            <section class="empty">
+              ${icon('search')}
+              <h3>没有找到匹配的 Skill</h3>
+              <p>换个关键词，或先通过导入、对话创建补充能力资产。</p>
+            </section>
+          `}
+        </main>
+      `;
+    }
+
+    function renderSkillCard(skill) {
+      const checked = state.selectedExports.has(skill.id) ? 'checked' : '';
+      const isPublished = skill.status === 'published';
+      const canEditCard = !isOfficial(skill);
+      return `
+        <article class="skill-card ${checked ? 'selected' : ''}" data-skill-id="${skill.id}">
+          <div class="skill-card-head">
+            <div class="skill-visual" aria-hidden="true"></div>
+            <div class="skill-info">
+              <h3>${escapeHtml(skill.name)}</h3>
+              <p>${escapeHtml(skill.desc)}</p>
+            </div>
+            <div class="badge-stack">
+              ${skillStatusBadge(skill)}
+              ${originBadge(skill)}
+            </div>
+          </div>
+          <div class="skill-meta">
+            <span>更新时间 ${skill.updated}</span>
+            <span>|</span>
+            <span>创建人 ${skill.owner}</span>
+            <span>|</span>
+            <span>${skill.agent}</span>
+          </div>
+          <div class="skill-hover-actions" aria-label="${escapeHtml(skill.name)} 操作">
+            <button class="btn ${checked ? 'btn-soft' : ''}" data-action="toggleSelectExport" data-id="${skill.id}">
+              ${checked ? icon('check') + '取消选择' : icon('check') + '选择'}
+            </button>
+            <button class="btn" data-action="singleExport" data-id="${skill.id}">${icon('download')}导出</button>
+            <button class="btn ${isPublished ? '' : 'btn-primary'}" data-action="togglePublishFromCard" data-id="${skill.id}">
+              ${isPublished ? icon('refresh') + '取消发布' : icon('send') + '发布'}
+            </button>
+            <button class="btn" data-action="openCardEdit" data-id="${skill.id}" ${canEditCard ? '' : 'disabled title="官方 Skill 只读，不支持直接编辑"'}>${icon('edit')}编辑</button>
+            <button class="btn btn-danger" data-action="requestDeleteSkill" data-id="${skill.id}">${icon('close')}删除</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderEdit() {
+      const skill = getSkill();
+      const records = skill.records || [];
+      const stats = metric(records);
+      const selectedFile = state.selectedFile && skill.files[state.selectedFile] !== undefined
+        ? state.selectedFile
+        : Object.keys(skill.files)[0] || 'SKILL.md';
+      state.selectedFile = selectedFile;
+      const isEmptyDocs = Object.values(skill.files || {}).every(value => !String(value || '').trim());
+      const requestedTab = state.editTab || 'edit';
+      const isOfficialSkill = isOfficial(skill);
+      const canEditSkill = !isOfficialSkill;
+      const detailMode = canEditSkill ? (state.detailMode || 'view') : 'view';
+      const activeTab = detailMode === 'edit' ? 'edit' : requestedTab;
+      const isEditing = activeTab === 'edit' && detailMode === 'edit';
+      const canShowExperience = detailMode === 'view';
+      const hasDocs = hasSkillDocContent(skill);
+      const isDebugOpen = isEditing && hasDocs && state.debugOpen;
+      const shellClass = activeTab === 'experience'
+        ? 'experience-workbench'
+        : detailMode === 'view'
+          ? 'view-workbench'
+          : isDebugOpen
+            ? 'debug-open'
+            : 'debug-collapsed';
+
+      return `
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="back-btn" data-action="goList" aria-label="返回">${icon('back')}</button>
+            <div class="title-stack"><h2>${detailMode === 'edit' ? '编辑 Skill' : '查看 Skill'}</h2></div>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Skill 详情页">
+            <button class="tab ${activeTab === 'edit' ? 'active' : ''}" data-action="setEditTab" data-tab="edit">${detailMode === 'edit' ? '编辑Skill' : '查看Skill'}</button>
+            ${canShowExperience ? `<button class="tab ${activeTab === 'experience' ? 'active' : ''}" data-action="setEditTab" data-tab="experience">调用经验</button>` : ''}
+          </div>
+          <div class="topbar-right">
+            ${activeTab === 'edit' && detailMode === 'view' ? `<button class="btn ${canEditSkill ? 'btn-primary' : ''}" data-action="enterEditMode" ${canEditSkill ? '' : 'disabled title="官方 Skill 只读，不支持直接编辑"'}>${icon('edit')}编辑</button>` : ''}
+            ${isEditing && state.rollbackSnapshot ? `<button class="btn" data-action="rollbackVersion">${icon('refresh')}回滚到 ${state.rollbackSnapshot.version}</button>` : ''}
+            ${isEditing ? `
+              <button class="btn" data-action="openVersion">${icon('history')}版本管理：${escapeHtml(skill.version)}</button>
+              <button class="btn" data-action="saveSkill">${icon('save')}仅保存</button>
+              <button class="btn btn-primary" data-action="publishSkill">${icon('send')}保存并发布</button>
+            ` : ''}
+          </div>
+        </header>
+
+        <main class="edit-shell ${shellClass}">
+          ${activeTab === 'edit' && detailMode === 'edit' ? `
+            ${!isDebugOpen ? `<aside class="assistant-panel">
+              <div class="assistant-head">
+                <h3>${icon('spark')}对话编辑</h3>
+                <button class="back-btn" title="收起">${icon('close')}</button>
+              </div>
+              <div class="assistant-body">
+                <div class="assistant-message">
+                  <div class="tiny-avatar"></div>
+                  <div class="assistant-copy">描述你希望调整的功能需求、使用场景、交互逻辑与实现效果。我会把建议同步到技能信息和技能文件中。</div>
+                </div>
+                <div class="hint blue">AI 修改会读取当前编辑态。模型和思考开关只属于对话生成/修改过程，不写入 Skill 基础配置。</div>
+              </div>
+              <section class="assistant-box">
+                <textarea id="modifyPrompt" placeholder="例如：增强扫描版 PDF 的 OCR 策略，并在失败时输出可重试原因。"></textarea>
+                <div class="assistant-footer">
+                  <div class="inline">
+                    <span class="model-pill"><span class="model-mark"></span>ds-v4-codingplan</span>
+                    ${renderThinkingSwitch(skill.thinkingOn !== false, 'toggleThinking')}
+                  </div>
+                  <button class="btn btn-primary" data-action="assistantModify">${icon('send')}</button>
+                </div>
+              </section>
+            </aside>` : ''}
+
+            <section class="edit-main">
+              <div class="edit-main-head">
+                <div class="title-stack">
+                  <h2>编辑Skill</h2>
+                  <p>编辑区修改后会出现未保存状态；仅保存写入草稿，保存并发布才影响线上版本；展开调试预览可使用当前编辑态。</p>
+                </div>
+                <div class="inline">
+                  <span class="badge ${skill.dirty ? 'orange' : 'green'}" data-dirty-indicator>${skill.dirty ? '未保存变更' : '已保存'}</span>
+                  ${skill.aiUndoSnapshot ? `<button class="btn" data-action="undoAiChange">${icon('refresh')}撤销 AI 修改</button>` : ''}
+                  <button class="btn btn-soft" data-action="toggleDebugPanel" ${hasDocs ? '' : 'disabled title="暂无 SKILL.md 内容，无法调试"'}>${icon('flask')}${state.debugOpen ? '收起调试预览' : '展开调试预览'}</button>
+                </div>
+              </div>
+
+              ${isEmptyDocs ? `<div class="hint mb-12">${icon('alert')} 当前暂无 SKILL.md 文档内容，调试预览不可用。请先通过 AI 修改或手动补充技能文档。</div>` : ''}
+
+              <section class="section">
+                <div class="section-title"><h3>${icon('settings')}技能信息</h3></div>
+                <div class="form-panel">
+                  <div class="form-grid">
+                    <div class="field">
+                      <label>Skill 展示名称</label>
+                      <input data-action="fieldInput" data-field="name" value="${escapeHtml(skill.name)}">
+                    </div>
+                    <div class="field disabled">
+                      <label>Skill ID</label>
+                      <input value="${escapeHtml(skill.id)}" disabled>
+                    </div>
+                    <div class="field full">
+                      <label><span class="required">*</span>Skill 描述</label>
+                      <textarea data-action="fieldInput" data-field="desc" maxlength="500">${escapeHtml(skill.desc)}</textarea>
+                      <small>${escapeHtml(skill.desc).length}/500。导入 Skill 包时会自动读取 SKILL.md front matter 的 name 与 description。</small>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="section">
+                <div class="section-title">
+                  <h3>${icon('file')}技能文件</h3>
+                  <div class="inline">
+                    <button class="btn" data-action="openVersion">${icon('history')}版本管理</button>
+                  </div>
+                </div>
+                <div class="file-panel">
+                  <aside class="file-tree">
+                    <div class="file-tree-head">资源目录</div>
+                    <div class="file-list">
+                      ${Object.keys(skill.files).map(file => `
+                        <button class="file-item ${file === selectedFile ? 'active' : ''}" data-action="selectFile" data-file="${escapeHtml(file)}">
+                          ${icon(file.includes('/') ? 'folder' : 'file')}${escapeHtml(file)}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </aside>
+                  <section class="code-editor">
+                    <div class="editor-head">
+                      <span>${escapeHtml(selectedFile)}</span>
+                      <span class="muted">${skill.dirty ? '未保存变更会以临时草稿参与调试' : '当前内容已保存为草稿/版本'}</span>
+                    </div>
+                    <textarea data-action="fileContent" spellcheck="false">${escapeHtml(skill.files[selectedFile] || '')}</textarea>
+                  </section>
+                </div>
+              </section>
+            </section>
+
+            ${isDebugOpen ? renderDebugDrawer(skill) : ''}
+          ` : activeTab === 'edit' ? renderSkillViewTab(skill, selectedFile) : renderExperienceTab(skill, records, stats)}
+        </main>
+      `;
+    }
+
+    function renderSkillViewTab(skill, selectedFile) {
+      return `
+        <section class="edit-main">
+          <div class="edit-main-head">
+            <div class="title-stack">
+              <h2>查看Skill</h2>
+              <p>${isOfficial(skill) ? '官方 Skill 为平台只读资产，可查看基础信息和技能文件，不能直接编辑或通过对话修改。' : '当前内容来自已保存版本，基础信息和技能文件为只读。'}</p>
+            </div>
+            <div class="inline">
+              ${originBadge(skill)}
+              ${skillStatusBadge(skill)}
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="section-title"><h3>${icon('settings')}技能信息</h3></div>
+            <div class="form-panel">
+              <div class="form-grid">
+                <div class="field">
+                  <label>Skill 展示名称</label>
+                  <input value="${escapeHtml(skill.name)}" readonly>
+                </div>
+                <div class="field disabled">
+                  <label>Skill ID</label>
+                  <input value="${escapeHtml(skill.id)}" disabled>
+                </div>
+                <div class="field full">
+                  <label>Skill 描述</label>
+                  <textarea readonly>${escapeHtml(skill.desc)}</textarea>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-title">
+              <h3>${icon('file')}技能文件</h3>
+              <button class="btn" data-action="openVersion">${icon('history')}版本管理</button>
+            </div>
+            <div class="file-panel">
+              <aside class="file-tree">
+                <div class="file-tree-head">资源目录</div>
+                <div class="file-list">
+                  ${Object.keys(skill.files).map(file => `
+                    <button class="file-item ${file === selectedFile ? 'active' : ''}" data-action="selectFile" data-file="${escapeHtml(file)}">
+                      ${icon(file.includes('/') ? 'folder' : 'file')}${escapeHtml(file)}
+                    </button>
+                  `).join('')}
+                </div>
+              </aside>
+              <section class="code-editor">
+                <div class="editor-head">
+                  <span>${escapeHtml(selectedFile)}</span>
+                  <span class="muted">只读预览</span>
+                </div>
+                <textarea readonly spellcheck="false">${escapeHtml(skill.files[selectedFile] || '')}</textarea>
+              </section>
+            </div>
+          </section>
+        </section>
+      `;
+    }
+
+    function renderExperienceTab(skill, records, stats) {
+      const sorted = [...records].sort((a, b) => String(b.time).localeCompare(String(a.time)));
+      const pageSize = 10;
+      const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+      state.experiencePage = Math.min(Math.max(state.experiencePage || 1, 1), totalPages);
+      const pageRecords = sorted.slice((state.experiencePage - 1) * pageSize, state.experiencePage * pageSize);
+      const canOptimize = !isOfficial(skill);
+      return `
+        <aside class="experience-panel">
+          <div class="experience-head">
+            <div class="panel-title">
+              <div>
+                <h3>${icon('clock')}调用经验</h3>
+                <p class="muted mt-12">仅在查看态展示线上调用记录；调试预览产生的临时记录不会进入这里。</p>
+              </div>
+              ${canOptimize ? `<button class="btn btn-soft" data-action="generateOptimize" ${records.length ? '' : 'disabled'}>${icon('spark')}Skill 优化</button>` : ''}
+            </div>
+            <div class="metric-grid">
+              <div class="metric"><strong>${stats.total}</strong><span>最近调用记录</span><small>按时间倒序展示，10 条/页。</small></div>
+              <div class="metric"><strong>${stats.successRate}</strong><span>平均调用成功率</span><small>成功率 = 成功调用数 / 已完成调用数；已完成 = 成功 + 失败。</small></div>
+              <div class="metric"><strong>${stats.avg}${stats.avg === '-' ? '' : 's'}</strong><span>平均时长</span><small>平均时长 = 已完成调用总耗时 / 已完成调用数。</small></div>
+            </div>
+          </div>
+          <div class="experience-body">
+            <section class="experience-list">
+              ${records.length ? `
+                <div class="call-record-table-wrap">
+                  <table class="table call-record-table">
+                    <thead>
+                      <tr>
+                        <th>调用 Skill 版本</th>
+                        <th>UserID</th>
+                        <th>SessionID</th>
+                        <th>时间</th>
+                        <th>耗时</th>
+                        <th>状态</th>
+                        <th>上下文</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${pageRecords.map(renderCallRecordRow).join('')}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="row mt-16" style="justify-content: space-between;">
+                  <span class="muted">第 ${state.experiencePage} / ${totalPages} 页，每页 10 条</span>
+                  <div class="inline">
+                    <button class="btn" data-action="prevExperiencePage" ${state.experiencePage <= 1 ? 'disabled' : ''}>上一页</button>
+                    <button class="btn" data-action="nextExperiencePage" ${state.experiencePage >= totalPages ? 'disabled' : ''}>下一页</button>
+                  </div>
+                </div>
+              ` : `
+                <div class="empty">
+                  ${icon('history')}
+                  <h3>暂无调用记录</h3>
+                  <p>暂无线上调用记录，Skill 优化不可用。</p>
+                </div>
+              `}
+            </section>
+          </div>
+        </aside>
+      `;
+    }
+
+    function renderCallRecordRow(record) {
+      return `
+        <tr>
+          <td>${escapeHtml(record.version)}</td>
+          <td>${escapeHtml(record.userId || '-')}</td>
+          <td>${escapeHtml(record.sessionId || record.id)}</td>
+          <td>${escapeHtml(record.time)}</td>
+          <td>${escapeHtml(record.duration)}s</td>
+          <td><span class="badge ${record.status === 'success' ? 'green' : record.status === 'failed' ? 'red' : ''}">${record.status === 'success' ? '成功' : record.status === 'failed' ? '失败' : '取消'}</span></td>
+          <td><button class="btn btn-soft" data-action="openSession" data-id="${escapeHtml(record.id)}">${icon('eye')}查看上下文</button></td>
+        </tr>
+      `;
+    }
+
+    function renderDebugDrawer(skill) {
+      return `
+        <div class="debug-scrim" data-action="closeDebugPanel"></div>
+        <aside class="debug-drawer" role="complementary" aria-label="调试预览抽屉">
+          ${renderDebugPanel(skill, { drawer: true })}
+        </aside>
+      `;
+    }
+
+    function renderDebugPanel(skill, options = {}) {
+      const messages = skill.debugMessages || [];
+      return `
+        <aside class="debug-panel" role="complementary" aria-label="调试预览">
+          <div class="debug-head">
+            <h3>调试预览</h3>
+            <div class="inline">
+              <span class="badge ${skill.dirty ? 'orange' : 'blue'}" data-debug-version>${skill.dirty ? '临时草稿调试' : escapeHtml(skill.version)}</span>
+              ${options.drawer ? `<button class="btn" data-action="closeDebugPanel">${icon('close')}关闭调试</button>` : ''}
+            </div>
+          </div>
+          <div class="debug-body">
+            <div class="preview-card">
+              <div class="skill-visual"></div>
+              <div>
+                <h3>${escapeHtml(skill.name)}</h3>
+                <p class="muted">${escapeHtml(skill.desc)}</p>
+              </div>
+            </div>
+            <div class="hint blue">
+              每次调试都读取当前技能文件，包括 AI 已写入但未保存的内容；每次都是全新 session，不继承上一次上下文。
+            </div>
+            <div class="debug-log">
+              ${(messages.length ? messages : [
+                { role: 'assistant', text: '请输入测试问题。' }
+              ]).map((msg, index) => msg.divider ? `<div class="session-divider">上文是前一次调试的，与本次无关</div>` : `<div class="bubble ${msg.role}">${escapeHtml(msg.text)}</div>`).join('')}
+            </div>
+          </div>
+          <section class="debug-input">
+            <textarea id="debugPrompt" data-enter-submit="debug" placeholder="请输入测试问题..."></textarea>
+            <div class="debug-footer">
+              <div class="inline">
+                <span class="model-pill"><span class="model-mark"></span>ds-v4-codingplan</span>
+                ${renderThinkingSwitch(skill.debugThinkingOn !== false, 'toggleDebugThinking')}
+              </div>
+              <button class="btn btn-primary" data-action="sendDebug">${icon('send')}</button>
+            </div>
+          </section>
+        </aside>
+      `;
+    }
+
+    function renderModal() {
+      const root = document.getElementById('modal-root');
+      if (!state.modal) {
+        root.innerHTML = '';
+        return;
+      }
+      const modal = {
+        import: renderImportModal,
+        export: renderExportModal,
+        optimize: renderOptimizeModal,
+        diff: renderDiffModal,
+        version: renderVersionModal,
+        versionSave: renderVersionSaveModal,
+        rollbackConfirm: renderRollbackConfirmModal,
+        session: renderSessionModal,
+        delete: renderDeleteModal
+      }[state.modal];
+      root.innerHTML = modal ? modal() : '';
+    }
+
+    function renderDeleteModal() {
+      const skill = skills.find(item => item.id === state.deleteCandidateId);
+      return `
+        <div class="modal-backdrop">
+          <section class="modal small">
+            <div class="modal-head">
+              <h2>删除 Skill</h2>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              <div class="hint">
+                ${icon('alert')} 删除后该 Skill 将从列表移除，关联的调试记录和版本草稿也会一并不可见。此操作需要二次确认。
+              </div>
+              <p class="mt-16">确认删除 <strong>${escapeHtml(skill?.name || '该 Skill')}</strong> 吗？</p>
+            </div>
+            <div class="modal-foot">
+              <button class="btn" data-action="closeModal">取消</button>
+              <button class="btn btn-danger" data-action="confirmDeleteSkill">${icon('close')}确认删除</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderImportModal() {
+      const validCount = state.importItems.filter(item => item.valid).length;
+      const invalidCount = state.importItems.length - validCount;
+      return `
+        <div class="modal-backdrop">
+          <section class="modal wide">
+            <div class="modal-head">
+              <h2>导入 Skill</h2>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              ${state.importItems.length ? `
+                <div>
+                  <div class="row mb-12">
+                    <span class="badge green">可导入 ${validCount}</span>
+                    <span class="badge red">失败 ${invalidCount}</span>
+                    <span class="muted">可导入项已完成上传校验，确认后成功项默认自动开启并返回 Skill 列表。</span>
+                  </div>
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>文件包</th>
+                        <th>SKILL.md 读取结果</th>
+                        <th>状态</th>
+                        <th>失败原因 / 处理建议</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${state.importItems.map(item => `
+                        <tr>
+                          <td>${escapeHtml(item.file)}</td>
+                          <td><strong>${escapeHtml(item.name || '-')}</strong><br><span class="muted">${escapeHtml(item.desc || '-')}</span></td>
+                          <td>${item.valid ? '<span class="badge green">已上传，确认后开启</span>' : '<span class="badge red">不可导入</span>'}</td>
+                          <td>${escapeHtml(item.reason || '通过校验。')}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              ` : `
+                <div class="upload-zone">
+                  <div class="upload-mark">${icon('upload')}</div>
+                  <div>
+                    <h3>拖拽文件至此，或选择文件上传</h3>
+                    <p class="muted">支持批量 .zip 包；导入时自动读取 SKILL.md 的 name、description 字段，校验失败会展示清单和原因。</p>
+                  </div>
+                  <div class="inline">
+                    <label class="btn btn-primary" for="skillFileInput">${icon('upload')}选择文件上传</label>
+                    <input id="skillFileInput" class="hidden-file" type="file" multiple accept=".zip" data-action="realImportFiles">
+                    <button class="btn" data-action="simulateImport">${icon('spark')}载入示例包</button>
+                  </div>
+                </div>
+              `}
+            </div>
+            <div class="modal-foot">
+              <button class="btn" data-action="closeModal">取消</button>
+              ${state.importItems.length ? `<button class="btn btn-primary" data-action="confirmImport" ${validCount ? '' : 'disabled'}>确认导入 ${validCount} 个</button>` : ''}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderExportModal() {
+      const exportIds = state.exportIds || Array.from(state.selectedExports);
+      const selected = skills.filter(skill => exportIds.includes(skill.id));
+      return `
+        <div class="modal-backdrop">
+          <section class="modal small">
+            <div class="modal-head">
+              <h2>批量导出 Skill</h2>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              <p class="muted">将下载 ${selected.length} 个独立 Skill 包，包内包含 SKILL.md、资源文件、版本元信息与启用状态快照。</p>
+              <table class="table mt-16">
+                <thead><tr><th>Skill</th><th>版本</th><th>来源</th></tr></thead>
+                <tbody>
+                  ${selected.map(skill => `<tr><td>${escapeHtml(skill.name)}</td><td>${escapeHtml(skill.version)}</td><td>${isOfficial(skill) ? '官方' : '我的'}</td></tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-foot">
+              <button class="btn" data-action="closeModal">取消</button>
+              <button class="btn btn-primary" data-action="confirmExport">${icon('download')}下载 ${selected.length} 个包</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderOptimizeModal() {
+      const skill = getSkill();
+      const records = skill.records || [];
+      const draft = state.optimizeDraft;
+      const maxCount = Math.min(records.length, 20);
+      return `
+        <div class="modal-backdrop">
+          <section class="modal wide">
+            <div class="modal-head">
+              <div>
+                <h2>Skill 优化</h2>
+                <p class="muted mt-12">${draft ? '大模型已生成优化草稿，可接受或拒绝。' : '选择模型和调用记录个数后执行优化。'}</p>
+              </div>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              ${draft ? `
+                <div class="hint blue mb-12">优化输入：最新 ${draft.count} 次调用记录 + 当前 ${escapeHtml(skill.version)} 技能文件 + Skill 优化提示词。</div>
+                <table class="table">
+                  <thead><tr><th>文件</th><th>优化内容</th><th>状态</th></tr></thead>
+                  <tbody>
+                    ${Object.keys(draft.files).map(file => `
+                      <tr>
+                        <td>${escapeHtml(file)}</td>
+                        <td>${escapeHtml(file === 'SKILL.md' ? '补充调用失败处理、输入输出约束和优化提示词。' : '补充基于调用记录的经验规则。')}</td>
+                        <td><span class="badge orange">待接受</span></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              ` : `
+                <div class="form-grid">
+                  <div class="field">
+                    <label>模型</label>
+                    <select id="optimizeModel" class="control">
+                      <option value="ds-v4-codingplan" ${state.optimizeModel === 'ds-v4-codingplan' ? 'selected' : ''}>ds-v4-codingplan</option>
+                      <option value="doubao-seed-1.6" ${state.optimizeModel === 'doubao-seed-1.6' ? 'selected' : ''}>doubao-seed-1.6</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>调用记录个数</label>
+                    <select id="optimizeRecordCount" class="control">
+                      ${[3, 5, 10, 20].filter(count => count <= Math.max(maxCount, 3)).map(count => `<option value="${count}" ${state.optimizeRecordCount === count ? 'selected' : ''}>最新 ${count} 次</option>`).join('')}
+                    </select>
+                  </div>
+                </div>
+                <div class="hint blue mt-16">执行时会把最新 X 次调用记录、Skill 优化提示词和当前技能文件一起提交给模型，生成优化草稿。</div>
+              `}
+            </div>
+            <div class="modal-foot">
+              ${draft ? `
+                <button class="btn" data-action="rejectOptimize">拒绝</button>
+                <button class="btn btn-primary" data-action="acceptOptimize">${icon('check')}接受草稿</button>
+              ` : `
+                <button class="btn" data-action="closeModal">取消</button>
+                <button class="btn btn-primary" data-action="executeOptimize">${icon('spark')}执行优化</button>
+              `}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderDiffModal() {
+      const skill = getSkill();
+      ensureVersionData(skill);
+      const baseVersion = skill.versions.find(item => item.version === state.compareVersionA);
+      const targetVersion = skill.versions.find(item => item.version === state.compareVersionB);
+      if (!baseVersion || !targetVersion || baseVersion.version === targetVersion.version) {
+        return `
+          <div class="modal-backdrop">
+            <section class="modal small">
+              <div class="modal-head">
+                <h2>版本对比</h2>
+                <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+              </div>
+              <div class="modal-body">
+                <div class="hint">${icon('alert')} 请先在版本管理中选择两个不同版本，再查看差异。</div>
+              </div>
+              <div class="modal-foot">
+                <button class="btn btn-primary" data-action="openVersion">去选择版本</button>
+              </div>
+            </section>
+          </div>
+        `;
+      }
+      const baseFiles = baseVersion.files || {};
+      const targetFiles = targetVersion.files || {};
+      const fileRows = diffFileTree(baseFiles, targetFiles);
+      const previous = baseFiles['SKILL.md'] || '';
+      const current = targetFiles['SKILL.md'] || '';
+      return `
+        <div class="modal-backdrop">
+          <section class="modal wide">
+            <div class="modal-head">
+              <div>
+                <h2>版本对比</h2>
+                <p class="muted mt-12">${escapeHtml(targetVersion.version)} 相对 ${escapeHtml(baseVersion.version)} 的变化；先展示文件树，再展示 SKILL.md 差异。</p>
+              </div>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              <div class="section-title">
+                <h3>${icon('folder')}文件树变化</h3>
+              </div>
+              <table class="table mb-12">
+                <thead><tr><th>文件</th><th>${escapeHtml(baseVersion.version)}</th><th>${escapeHtml(targetVersion.version)}</th><th>变化</th></tr></thead>
+                <tbody>
+                  ${fileRows.map(row => `
+                    <tr>
+                      <td>${escapeHtml(row.file)}</td>
+                      <td>${row.inOld ? '<span class="badge">存在</span>' : '<span class="badge red">无</span>'}</td>
+                      <td>${row.inNew ? '<span class="badge">存在</span>' : '<span class="badge red">无</span>'}</td>
+                      <td><span class="badge ${row.type === '新增' ? 'green' : row.type === '删除' ? 'red' : row.type === '修改' ? 'orange' : ''}">${row.type}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div class="section-title">
+                <h3>${icon('file')}SKILL.md 内容差异</h3>
+              </div>
+              <div class="diff-grid">
+                <div class="diff-pane">
+                  <div class="diff-title">${escapeHtml(baseVersion.version)} 基准版本</div>
+                  <pre class="diff">${renderDiff(previous, current, 'old')}</pre>
+                </div>
+                <div class="diff-pane">
+                  <div class="diff-title">${escapeHtml(targetVersion.version)} 目标版本</div>
+                  <pre class="diff">${renderDiff(previous, current, 'new')}</pre>
+                </div>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button class="btn btn-primary" data-action="closeModal">我知道了</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderVersionModal() {
+      const skill = getSkill();
+      ensureVersionData(skill);
+      const latest = skill.versions[0];
+      const previous = skill.versions[1] || latest;
+      const versionNames = new Set(skill.versions.map(item => item.version));
+      const baseValue = versionNames.has(state.compareVersionA) ? state.compareVersionA : previous?.version || '';
+      const targetValue = versionNames.has(state.compareVersionB) ? state.compareVersionB : latest?.version || '';
+      const optionList = (selected) => skill.versions.map(item => `
+        <option value="${escapeHtml(item.version)}" ${item.version === selected ? 'selected' : ''}>${escapeHtml(item.version)} ${item.status ? `· ${escapeHtml(item.status)}` : ''} · ${escapeHtml(item.time)}</option>
+      `).join('');
+      return `
+        <div class="modal-backdrop">
+          <section class="modal wide">
+            <div class="modal-head">
+              <h2>版本管理</h2>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              <div class="version-compare-card">
+                <div class="field">
+                  <label>基准版本</label>
+                  <select id="compareVersionA">${optionList(baseValue)}</select>
+                </div>
+                <div class="field">
+                  <label>目标版本</label>
+                  <select id="compareVersionB">${optionList(targetValue)}</select>
+                </div>
+                <button class="btn btn-primary" data-action="openDiff">${icon('eye')}版本对比</button>
+              </div>
+              <table class="table">
+                <thead><tr><th>版本号</th><th>时间</th><th>版本描述</th><th>创建人</th><th>状态</th><th>操作</th></tr></thead>
+                <tbody>
+                  ${skill.versions.map((item, index) => `
+                    <tr>
+                      <td>${escapeHtml(item.version)}</td>
+                      <td>${escapeHtml(item.time)}</td>
+                      <td>${escapeHtml(item.desc || '-')}</td>
+                      <td>${escapeHtml(item.creator || skill.owner || 'MarketingAgent')}</td>
+                      <td>${item.status ? `<span class="badge ${item.status === '已发布' ? 'blue' : item.status === '草稿' ? 'orange' : ''}">${escapeHtml(item.status)}</span>` : '<span class="muted">-</span>'}</td>
+                      <td>
+                        <div class="inline">
+                          <button class="btn btn-soft" data-action="copyVersion" data-version="${escapeHtml(item.version)}">${icon('copy')}复制为新版本</button>
+                          <button class="btn" data-action="requestRollbackToVersion" data-version="${escapeHtml(item.version)}" ${index === 0 ? 'disabled' : ''}>${icon('refresh')}回退到该版本</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div class="hint blue mt-16">版本状态最多只有一个“已发布”；发布态之后的新版本为“草稿”。发布覆盖会将其他历史版本状态置为空；回退会清除目标版本之后的版本。</div>
+            </div>
+            <div class="modal-foot">
+              <button class="btn btn-primary" data-action="closeModal">完成</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderVersionSaveModal() {
+      const skill = getSkill();
+      ensureVersionData(skill);
+      const action = state.versionAction || 'save';
+      const latest = skill.versions[0];
+      const source = action === 'copy' ? skill.versions.find(item => item.version === state.versionSource) : null;
+      const isPublish = action === 'publish';
+      const isCopy = action === 'copy';
+      const title = isCopy ? `复制 ${source?.version || ''} 为新版本` : isPublish ? '保存并发布' : '仅保存';
+      const next = nextVersion(maxVersion(skill));
+      const overwriteDisabled = !isPublish && latest?.status !== '草稿';
+      return `
+        <div class="modal-backdrop">
+          <section class="modal">
+            <div class="modal-head">
+              <div>
+                <h2>${title}</h2>
+                <p class="muted mt-12">${isPublish ? '发布后该版本成为唯一发布态，其他历史版本状态置为空。' : isCopy ? '复制会基于所选版本文件创建一个新的草稿版本。' : '保存后生成草稿版本，不直接发布。'}</p>
+              </div>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              <div class="version-save-summary">
+                <div class="summary-icon">${isPublish ? icon('send') : isCopy ? icon('copy') : icon('save')}</div>
+                <div>
+                  <strong>${isCopy ? `来源版本：${escapeHtml(source?.version || '-')}` : `当前最近版本：${escapeHtml(latest?.version || '-')}`}</strong>
+                  <span class="muted">${isCopy ? `将复制所选版本文件并创建草稿；新版本号必须大于当前最大版本 ${escapeHtml(maxVersion(skill))}。` : isPublish ? '发布后目标版本会成为唯一发布态，列表发布状态同步更新。' : '仅保存会生成草稿版本；覆盖最近版本时要求最近版本本身为草稿态。'}</span>
+                </div>
+              </div>
+              ${isCopy ? '' : `
+                <div class="version-mode-grid">
+                  <label class="version-mode-card">
+                    <input type="radio" name="versionMode" value="new" checked>
+                    <span>
+                      <strong>新建版本</strong>
+                      <span>填写新版本号和可选描述。版本号必须大于当前最大版本 ${escapeHtml(maxVersion(skill))}。</span>
+                    </span>
+                  </label>
+                  <label class="version-mode-card ${overwriteDisabled ? 'disabled' : ''}">
+                    <input type="radio" name="versionMode" value="overwrite" ${overwriteDisabled ? 'disabled' : ''}>
+                    <span>
+                      <strong>覆盖最近版本 ${escapeHtml(latest?.version || '-')}</strong>
+                      <span>${overwriteDisabled ? '仅保存覆盖时，最近版本必须为草稿态。' : isPublish ? '覆盖后该版本为发布态，其他历史版本状态置为空。' : '覆盖后继续保持草稿态，不新增版本号。'}</span>
+                    </span>
+                  </label>
+                </div>
+              `}
+              <div class="version-form-card">
+                <div class="form-grid">
+                  <div class="field">
+                    <label><span class="required">*</span>版本号</label>
+                    <input id="versionNumberInput" placeholder="${escapeHtml(stripVersionPrefix(next))}" value="${isCopy ? stripVersionPrefix(next) : ''}">
+                    <small>新建或复制时填写，格式为数点数，例如 1.3；覆盖最近版本时以最近版本号为准。</small>
+                  </div>
+                  <div class="field">
+                    <label>当前最大版本</label>
+                    <input value="${escapeHtml(maxVersion(skill))}" disabled>
+                    <small>新建版本保存校验必须大于该版本。</small>
+                  </div>
+                  <div class="field full">
+                    <label>版本描述</label>
+                    <textarea id="versionDescInput" placeholder="可填写本次修改、保存或发布的说明。"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button class="btn" data-action="closeModal">取消</button>
+              <button class="btn btn-primary" data-action="confirmVersionSave">${isPublish ? icon('send') + '确认发布' : icon('save') + '确认保存'}</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderRollbackConfirmModal() {
+      const skill = getSkill();
+      ensureVersionData(skill);
+      const target = skill.versions.find(item => item.version === state.rollbackTargetVersion);
+      const index = skill.versions.findIndex(item => item.version === state.rollbackTargetVersion);
+      const removed = index > 0 ? skill.versions.slice(0, index) : [];
+      return `
+        <div class="modal-backdrop">
+          <section class="modal small">
+            <div class="modal-head">
+              <h2>回退到该版本</h2>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              <div class="hint">
+                ${icon('alert')} 确认回退到 <strong>${escapeHtml(target?.version || '-')}</strong> 吗？回退后将清除该版本之后的 ${removed.length} 个版本，文件内容也会恢复到该版本快照。
+              </div>
+              ${removed.length ? `<p class="muted mt-16">将清除：${removed.map(item => item.version).join('、')}</p>` : ''}
+            </div>
+            <div class="modal-foot">
+              <button class="btn" data-action="closeModal">取消</button>
+              <button class="btn btn-danger" data-action="confirmRollbackToVersion">${icon('refresh')}确认回退</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderSessionModal() {
+      const skill = getSkill();
+      const record = (skill.records || []).find(item => item.id === state.sessionId) || (skill.records || [])[0];
+      return `
+        <div class="modal-backdrop">
+          <section class="modal">
+            <div class="modal-head">
+              <h2>调用上下文</h2>
+              <button class="back-btn" data-action="closeModal">${icon('close')}</button>
+            </div>
+            <div class="modal-body">
+              ${record ? `
+                <div class="row mb-12">
+                  <span class="badge ${record.status === 'success' ? 'green' : 'red'}">${record.status === 'success' ? '成功' : '失败'}</span>
+                  <span class="tag">${escapeHtml(record.version)}</span>
+                  <span class="tag">${escapeHtml(record.userId || '-')}</span>
+                  <span class="tag">${escapeHtml(record.sessionId || record.id)}</span>
+                  <span class="tag">${record.duration}s</span>
+                  <span class="tag">${record.tokens} tokens</span>
+                </div>
+                <div class="call-fragments mb-12">
+                  <div class="fragment"><strong>调用前 query</strong>${escapeHtml(record.before || record.question || '-')}</div>
+                  <div class="fragment"><strong>调用后输出</strong>${escapeHtml(record.after || record.answer || '-')}</div>
+                  <div class="fragment"><strong>用户下一句 query</strong>${escapeHtml(record.nextQuery || '无')}</div>
+                </div>
+              ` : '<div class="empty">暂无记录</div>'}
+            </div>
+            <div class="modal-foot">
+              <button class="btn btn-primary" data-action="closeModal">关闭</button>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderDiff(oldText, newText, side) {
+      const oldLines = oldText.split('\n');
+      const newLines = newText.split('\n');
+      const max = Math.max(oldLines.length, newLines.length);
+      let html = '';
+      for (let i = 0; i < max; i++) {
+        const oldLine = oldLines[i] || '';
+        const newLine = newLines[i] || '';
+        if (oldLine === newLine) {
+          html += `<span class="line-same">${escapeHtml(side === 'old' ? oldLine : newLine) || ' '}</span>`;
+        } else if (side === 'old') {
+          html += `<span class="line-del">- ${escapeHtml(oldLine) || ' '}</span>`;
+        } else {
+          html += `<span class="line-add">+ ${escapeHtml(newLine) || ' '}</span>`;
+        }
+      }
+      return html;
+    }
+
+    function cloneFiles(files) {
+      return JSON.parse(JSON.stringify(files || {}));
+    }
+
+    function stripVersionPrefix(version) {
+      return String(version || '').replace(/^v/i, '');
+    }
+
+    function parseVersion(version) {
+      const normalized = stripVersionPrefix(version).trim();
+      const match = normalized.match(/^(\d+)\.(\d+)$/);
+      if (!match) return null;
+      return { label: `v${Number(match[1])}.${Number(match[2])}`, major: Number(match[1]), minor: Number(match[2]) };
+    }
+
+    function compareVersion(a, b) {
+      const va = parseVersion(a);
+      const vb = parseVersion(b);
+      if (!va || !vb) return 0;
+      if (va.major !== vb.major) return va.major - vb.major;
+      return va.minor - vb.minor;
+    }
+
+    function maxVersion(skill) {
+      ensureVersionData(skill);
+      return skill.versions.reduce((max, item) => compareVersion(item.version, max) > 0 ? item.version : max, skill.version || 'v0.0');
+    }
+
+    function diffFileTree(oldFiles, newFiles) {
+      const names = Array.from(new Set([...Object.keys(oldFiles || {}), ...Object.keys(newFiles || {})])).sort();
+      return names.map(file => {
+        const inOld = Object.prototype.hasOwnProperty.call(oldFiles || {}, file);
+        const inNew = Object.prototype.hasOwnProperty.call(newFiles || {}, file);
+        let type = '无变化';
+        if (!inOld && inNew) type = '新增';
+        else if (inOld && !inNew) type = '删除';
+        else if ((oldFiles || {})[file] !== (newFiles || {})[file]) type = '修改';
+        return { file, inOld, inNew, type };
+      });
+    }
+
+    function ensureVersionData(skill) {
+      if (!Array.isArray(skill.versions)) skill.versions = [];
+      if (!skill.versions.length) {
+        skill.versions.unshift({
+          version: skill.version || 'v0.1',
+          time: skill.updated || nowText(),
+          desc: '初始化版本',
+          creator: skill.owner || 'MarketingAgent',
+          status: skill.status === 'published' ? '已发布' : '草稿',
+          files: cloneFiles(skill.files)
+        });
+      }
+      skill.versions.forEach((item, index) => {
+        if (!item.desc) item.desc = item.status === '已发布' ? '发布版本' : item.status === '草稿' ? '草稿保存' : '历史版本';
+        if (!item.creator) item.creator = skill.owner || 'MarketingAgent';
+        if (!item.files) {
+          const files = cloneFiles(skill.files);
+          if (index > 0 && files['SKILL.md']) {
+            files['SKILL.md'] = files['SKILL.md'].replace(/version: .+\n/, `version: ${item.version}\n`);
+          }
+          item.files = files;
+        }
+        if (item.status && item.status !== '已发布' && item.status !== '草稿') item.status = '';
+      });
+      skill.versions.sort((a, b) => compareVersion(b.version, a.version));
+    }
+
+    function syncSkillMarkdown(skill) {
+      const raw = skill.files['SKILL.md'] || '';
+      const body = raw.startsWith('---\n') ? raw.replace(/^---\n[\s\S]*?\n---\n*/, '') : raw;
+      const fallback = `# ${skill.name}\n\n## 使用说明\n请补充 Skill 的适用场景、输入格式、输出要求和失败处理策略。\n`;
+      skill.files['SKILL.md'] = `---\nname: ${skill.name}\ndescription: ${skill.desc}\nversion: ${skill.version}\n---\n\n${body.trim() || fallback}`;
+    }
+
+    function saveVersionSnapshot(skill, options) {
+      ensureVersionData(skill);
+      const { version, desc, status, overwrite, sourceFiles } = options;
+      const targetFiles = cloneFiles(sourceFiles || skill.files);
+      skill.version = version;
+      skill.files = targetFiles;
+      syncSkillMarkdown(skill);
+      const snapshot = {
+        version,
+        time: nowText(),
+        desc: desc || (status === '已发布' ? '发布版本' : '草稿保存'),
+        creator: skill.owner || 'MarketingAgent',
+        status,
+        files: cloneFiles(skill.files)
+      };
+      if (status === '已发布') {
+        skill.versions.forEach(item => { item.status = ''; });
+      }
+      const existingIndex = skill.versions.findIndex(item => item.version === version);
+      if (overwrite && existingIndex >= 0) {
+        skill.versions[existingIndex] = { ...skill.versions[existingIndex], ...snapshot };
+      } else {
+        skill.versions.unshift(snapshot);
+      }
+      skill.versions.sort((a, b) => compareVersion(b.version, a.version));
+      skill.status = status === '已发布' ? 'published' : 'draft';
+      skill.enabled = status === '已发布';
+      skill.updated = nowText();
+      skill.dirty = false;
+      skill.aiUndoSnapshot = null;
+      state.selectedFile = 'SKILL.md';
+    }
+
+    function commitVersionForm(skill) {
+      ensureVersionData(skill);
+      const action = state.versionAction || 'save';
+      const latest = skill.versions[0];
+      const mode = action === 'copy' ? 'new' : (document.querySelector('input[name="versionMode"]:checked')?.value || 'new');
+      const desc = document.getElementById('versionDescInput')?.value.trim() || '';
+      const input = document.getElementById('versionNumberInput')?.value.trim() || '';
+      const status = action === 'publish' ? '已发布' : '草稿';
+
+      if (mode === 'overwrite') {
+        if (action === 'save' && latest.status !== '草稿') {
+          toast('仅保存覆盖时，最近版本必须是草稿态。');
+          return false;
+        }
+        saveVersionSnapshot(skill, { version: latest.version, desc, status, overwrite: true });
+        return true;
+      }
+
+      const parsed = parseVersion(input);
+      if (!parsed) {
+        toast('版本号必填，格式为数点数，例如 1.3。');
+        return false;
+      }
+      const currentMax = maxVersion(skill);
+      if (compareVersion(parsed.label, currentMax) <= 0) {
+        toast(`版本号必须大于当前最大版本 ${currentMax}。`);
+        return false;
+      }
+
+      const source = action === 'copy' ? skill.versions.find(item => item.version === state.versionSource) : null;
+      saveVersionSnapshot(skill, {
+        version: parsed.label,
+        desc,
+        status,
+        overwrite: false,
+        sourceFiles: source?.files
+      });
+      return true;
+    }
+
+    function rollbackToVersion(skill, version) {
+      ensureVersionData(skill);
+      const index = skill.versions.findIndex(item => item.version === version);
+      if (index < 0) {
+        toast('未找到目标版本。');
+        return false;
+      }
+      const target = skill.versions[index];
+      skill.versions = skill.versions.slice(index);
+      skill.version = target.version;
+      skill.files = cloneFiles(target.files);
+      skill.status = target.status === '已发布' ? 'published' : 'draft';
+      skill.enabled = target.status === '已发布';
+      skill.updated = nowText();
+      skill.dirty = false;
+      state.selectedFile = 'SKILL.md';
+      return true;
+    }
+
+    function nextVersion(version) {
+      const match = String(version).match(/v(\d+)\.(\d+)/);
+      if (!match) return 'v1.1';
+      return `v${match[1]}.${Number(match[2]) + 1}`;
+    }
+
+    function toast(message) {
+      const root = document.getElementById('toast-root');
+      const node = document.createElement('div');
+      node.className = 'toast';
+      node.textContent = message;
+      root.appendChild(node);
+      setTimeout(() => node.remove(), 3600);
+    }
+
+    function nowText() {
+      return '2026-06-04 ' + new Date().toTimeString().slice(0, 8);
+    }
+
+    function markDirty(skill) {
+      skill.dirty = true;
+      document.querySelectorAll('[data-dirty-indicator]').forEach(node => {
+        node.className = 'badge orange';
+        node.textContent = '未保存变更';
+      });
+      document.querySelectorAll('[data-debug-version]').forEach(node => {
+        node.className = 'badge orange';
+        node.textContent = '临时草稿调试';
+      });
+    }
+
+    function createDraftSkill(fromPrompt) {
+      const id = fromPrompt ? 'research-parser-' + Math.floor(Math.random() * 1000) : 'new-skill-' + Math.floor(Math.random() * 1000);
+      const name = fromPrompt ? '证券研报解析 Skill' : '未命名 Skill';
+      const desc = fromPrompt
+        ? '基于自然语言需求生成：支持上传研报 PDF，提取公司、评级、目标价、关键风险和结构化摘要。'
+        : '请填写 Skill 描述。';
+      const files = fromPrompt ? {
+        'SKILL.md': `---\nname: ${name}\ndescription: ${desc}\n---\n\n# ${name}\n\n## 适用场景\n用于证券研报、公告和分析材料的结构化解析。\n\n## 输入\n- PDF 文件\n- 可选：图片截图\n\n## 输出\n- company\n- rating\n- target_price\n- risks\n- evidence_pages\n`,
+        'schema.md': '# Output Schema\n\n输出 JSON 字段：company、rating、target_price、risks、evidence_pages。\n'
+      } : { 'SKILL.md': '' };
+      const skill = {
+        id,
+        name,
+        desc,
+        owner: 'MarketingAgent',
+        origin: 'mine',
+        status: 'draft',
+        enabled: false,
+        updated: nowText(),
+        agent: '暂无绑定 Agent',
+        version: 'v0.1',
+        tags: fromPrompt ? ['研报解析', 'PDF', '结构化抽取'] : [],
+        supportedTypes: fromPrompt ? ['text', 'pdf', 'image'] : ['text'],
+        modelVision: !!fromPrompt,
+        thinkingOn: state.createThinkingOn,
+        files,
+        versions: [{ version: 'v0.1', time: nowText(), status: '草稿' }],
+        records: [],
+        dirty: !!fromPrompt,
+        aiUndoSnapshot: fromPrompt ? {
+          name: '未命名 Skill',
+          desc: '请填写 Skill 描述。',
+          files: { 'SKILL.md': '' },
+          selectedFile: 'SKILL.md'
+        } : null
+      };
+      skills.unshift(skill);
+      state.selectedSkillId = id;
+      state.selectedFile = 'SKILL.md';
+      state.route = 'edit';
+      state.editTab = 'edit';
+      state.detailMode = 'edit';
+      state.debugOpen = false;
+      return skill;
+    }
+
+    function applyOptimizedFiles(skill) {
+      state.rollbackSnapshot = {
+        version: skill.version,
+        files: JSON.parse(JSON.stringify(skill.files)),
+        name: skill.name,
+        desc: skill.desc
+      };
+      const oldVersion = skill.version;
+      skill.version = nextVersion(skill.version);
+      skill.status = 'draft';
+      skill.updated = nowText();
+      skill.files['SKILL.md'] = (skill.files['SKILL.md'] || '') + '\n## 调试优化建议\n- 对扫描型 PDF：先执行 OCR，输出页级置信度；低于阈值时返回可重试原因。\n- 对表格密集页：保留跨页合并线索、表头和页码引用。\n';
+      skill.files['reference.md'] = (skill.files['reference.md'] || '# Reference\n') + '\n## 跨页表格规则\n1. 使用页码 + 表头相似度识别跨页表格。\n2. 合并后保留原始页码映射。\n';
+      skill.files['scripts/parse_pdf.py'] = (skill.files['scripts/parse_pdf.py'] || '') + '\n\ndef detect_page_type(page):\n    return "scan" if page.get("image_ratio", 0) > 0.65 else "text"\n';
+      skill.versions.unshift({ version: skill.version, time: nowText(), status: '草稿' });
+      skill.dirty = false;
+      state.selectedFile = 'SKILL.md';
+      state.editTab = 'edit';
+      state.detailMode = 'edit';
+      state.debugOpen = false;
+      toast(`已基于 ${oldVersion} 创建 ${skill.version} 草稿，可继续编辑或回滚。`);
+    }
+
+    document.addEventListener('click', (event) => {
+      const target = event.target.closest('[data-action]');
+      if (!target) {
+        if (event.target.closest('.skill-hover-actions')) return;
+        const card = event.target.closest('.skill-card');
+        if (card) {
+          clearTransientDebug(getSkill());
+          const item = skills.find(skill => skill.id === card.dataset.skillId);
+          if (!item) return;
+          state.selectedSkillId = card.dataset.skillId;
+          state.selectedFile = 'SKILL.md';
+          state.route = 'edit';
+          state.editTab = 'edit';
+          state.detailMode = 'view';
+          state.debugOpen = false;
+          render();
+        }
+        return;
+      }
+      const action = target.dataset.action;
+      const skill = getSkill();
+
+      if (action === 'setTab') {
+        state.activeTab = target.dataset.tab;
+      } else if (action === 'setEditTab') {
+        state.editTab = target.dataset.tab;
+        if (state.editTab === 'experience') state.experiencePage = 1;
+        state.debugOpen = false;
+      } else if (action === 'prevExperiencePage') {
+        state.experiencePage = Math.max(1, (state.experiencePage || 1) - 1);
+      } else if (action === 'nextExperiencePage') {
+        state.experiencePage = (state.experiencePage || 1) + 1;
+      } else if (action === 'openCreate') {
+        const created = createDraftSkill(false);
+        created.name = '自然语言创建 Skill 草稿';
+        created.desc = '请在左侧对话栏描述要创建的 Skill，AI 会把结果写入基础信息和技能文件。';
+        created.files['SKILL.md'] = '';
+        created.dirty = true;
+        state.detailMode = 'edit';
+        state.debugOpen = false;
+        toast('已进入 Skill 编辑态，可直接在左侧对话栏描述创建需求。');
+      } else if (action === 'manualCreate') {
+        createDraftSkill(false);
+        state.detailMode = 'edit';
+        state.debugOpen = false;
+        toast('已进入手动创建详情页。');
+      } else if (action === 'goList') {
+        clearTransientDebug(skill);
+        state.route = 'list';
+        state.debugOpen = false;
+      } else if (action === 'openImport') {
+        state.importItems = [];
+        state.modal = 'import';
+      } else if (action === 'simulateImport') {
+        state.importItems = [
+          { file: 'citic-research-parser.zip', name: 'citic-research-parser', desc: '解析中信证券研报，抽取评级、目标价、风险提示和页码证据。', valid: true },
+          { file: 'excel-quality-check.zip', name: 'excel-quality-check', desc: '检查 Excel/CSV 中的空值、异常值、字段类型和重复记录。', valid: true },
+          { file: '中文技能包.zip', name: '研报解析', desc: '名称含中文，用作失败示例。', valid: false, reason: 'name 字段不符合规范：仅支持小写字母、数字、中划线和下划线，且需以字母开头。' },
+          { file: 'pdf-parser-copy.zip', name: 'pdf解析', desc: '重复名称示例。', valid: false, reason: '与已有 Skill 展示名称重复，请改名后重新导入。' }
+        ];
+      } else if (action === 'confirmImport') {
+        const validItems = state.importItems.filter(item => item.valid);
+        const failedCount = state.importItems.length - validItems.length;
+        validItems.forEach(item => {
+          skills.unshift({
+            id: item.name,
+            name: item.name,
+            desc: item.desc,
+            owner: 'MarketingAgent',
+            origin: 'imported',
+            status: 'published',
+            enabled: true,
+            updated: nowText(),
+            agent: '暂无绑定 Agent',
+            version: 'v1.0',
+            tags: ['导入', '默认开启'],
+            supportedTypes: ['text'],
+            modelVision: false,
+            thinkingOn: true,
+            files: {
+              'SKILL.md': `---\nname: ${item.name}\ndescription: ${item.desc}\n---\n\n# ${item.name}\n\n导入后默认开启。\n`
+            },
+            versions: [{ version: 'v1.0', time: nowText(), status: '已发布' }],
+            records: []
+          });
+        });
+        state.modal = null;
+        state.importItems = [];
+        state.route = 'list';
+        state.activeTab = 'all';
+        toast(`导入完成：成功 ${validItems.length} 个，失败 ${failedCount} 个。成功项已默认开启。`);
+      } else if (action === 'openExport') {
+        if (!state.selectedExports.size) {
+          toast('请先选择需要导出的 Skill。');
+          return;
+        }
+        state.exportIds = null;
+        state.modal = 'export';
+      } else if (action === 'singleExport') {
+        state.exportIds = [target.dataset.id];
+        state.modal = 'export';
+      } else if (action === 'confirmExport') {
+        const exportIds = state.exportIds || Array.from(state.selectedExports);
+        const selected = skills.filter(item => exportIds.includes(item.id));
+        selected.forEach(item => {
+          const blob = new Blob([JSON.stringify({ skill: item.name, version: item.version, files: item.files }, null, 2)], { type: 'application/json' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = `${item.id}.skill.zip`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        });
+        state.modal = null;
+        state.exportIds = null;
+        toast(`已触发下载 ${selected.length} 个 Skill 包。`);
+      } else if (action === 'clearSelected') {
+        state.selectedExports.clear();
+      } else if (action === 'selectAllVisible') {
+        target.dataset.ids.split(',').filter(Boolean).forEach(id => state.selectedExports.add(id));
+      } else if (action === 'toggleSelectExport') {
+        const id = target.dataset.id;
+        if (state.selectedExports.has(id)) state.selectedExports.delete(id);
+        else state.selectedExports.add(id);
+      } else if (action === 'openEdit') {
+        state.selectedSkillId = target.dataset.id;
+        state.selectedFile = 'SKILL.md';
+        state.route = 'edit';
+        state.editTab = 'edit';
+        state.detailMode = 'view';
+        state.debugOpen = false;
+      } else if (action === 'openCardEdit') {
+        const item = skills.find(s => s.id === target.dataset.id);
+        if (!item || isOfficial(item)) {
+          toast('官方 Skill 为只读资产，不能直接编辑或对话修改。');
+          return;
+        }
+        state.selectedSkillId = target.dataset.id;
+        state.selectedFile = 'SKILL.md';
+        state.route = 'edit';
+        state.editTab = 'edit';
+        state.detailMode = 'edit';
+        state.debugOpen = false;
+      } else if (action === 'enterEditMode') {
+        if (isOfficial(skill)) {
+          toast('官方 Skill 为只读资产，不能直接编辑或对话修改。');
+          return;
+        }
+        state.detailMode = 'edit';
+        state.editTab = 'edit';
+        state.debugOpen = false;
+      } else if (action === 'togglePublishFromCard') {
+        const item = skills.find(s => s.id === target.dataset.id);
+        if (item) {
+          if (item.status === 'published') {
+            item.status = 'draft';
+            item.enabled = false;
+            item.updated = nowText();
+            toast(`${item.name} 已取消发布，卡片状态已更新为未发布。`);
+          } else {
+            item.status = 'published';
+            item.enabled = true;
+            item.updated = nowText();
+            if (!item.versions.some(version => version.version === item.version && version.status === '已发布')) {
+              item.versions.unshift({ version: item.version, time: nowText(), status: '已发布' });
+            }
+            toast(`${item.name} 已发布，卡片状态已更新为已发布。`);
+          }
+        }
+      } else if (action === 'requestDeleteSkill') {
+        state.deleteCandidateId = target.dataset.id;
+        state.modal = 'delete';
+      } else if (action === 'confirmDeleteSkill') {
+        const index = skills.findIndex(s => s.id === state.deleteCandidateId);
+        if (index >= 0) {
+          const [removed] = skills.splice(index, 1);
+          state.selectedExports.delete(removed.id);
+          if (state.selectedSkillId === removed.id) {
+            state.selectedSkillId = skills[0]?.id || '';
+            state.route = 'list';
+          }
+          toast(`${removed.name} 已删除。`);
+        }
+        state.deleteCandidateId = null;
+        state.modal = null;
+      } else if (action === 'toggleEnabled') {
+        const item = skills.find(s => s.id === target.dataset.id);
+        if (item) {
+          item.enabled = !item.enabled;
+          toast(`${item.name} 已${item.enabled ? '开启' : '关闭'}。`);
+        }
+      } else if (action === 'closeModal') {
+        state.modal = null;
+        state.exportIds = null;
+        state.deleteCandidateId = null;
+        state.versionSource = null;
+        state.rollbackTargetVersion = null;
+        state.optimizeDraft = null;
+      } else if (action === 'toggleCreateThinking') {
+        state.createThinkingOn = !state.createThinkingOn;
+      } else if (action === 'usePresetPrompt') {
+        state.createPrompt = '创建一个证券研报解析 Skill，支持上传 PDF 和截图，自动提取公司名称、评级、目标价、关键风险、核心观点，并输出结构化 JSON，要求给出页码引用。';
+      } else if (action === 'submitCreate') {
+        const prompt = document.getElementById('createPrompt')?.value.trim() || state.createPrompt.trim();
+        if (!prompt) {
+          toast('请先描述要创建的 Skill。');
+          return;
+        }
+        createDraftSkill(true);
+        toast('已生成 Skill 草稿，并进入详情编辑页。');
+      } else if (action === 'toggleThinking') {
+        skill.thinkingOn = !(skill.thinkingOn !== false);
+        toast(`思考已${skill.thinkingOn ? '开启' : '关闭'}。`);
+      } else if (action === 'toggleDebugThinking') {
+        skill.debugThinkingOn = !(skill.debugThinkingOn !== false);
+        toast(`调试思考已${skill.debugThinkingOn ? '开启' : '关闭'}。`);
+      } else if (action === 'toggleDebugPanel') {
+        if (!hasSkillDocContent(skill)) {
+          toast('暂无 SKILL.md 内容，无法调试。');
+          return;
+        }
+        state.debugOpen = !state.debugOpen;
+      } else if (action === 'closeDebugPanel') {
+        state.debugOpen = false;
+      } else if (action === 'selectFile') {
+        state.selectedFile = target.dataset.file;
+      } else if (action === 'openDiff') {
+        const base = document.getElementById('compareVersionA')?.value || state.compareVersionA;
+        const targetVersion = document.getElementById('compareVersionB')?.value || state.compareVersionB;
+        if (!base || !targetVersion) {
+          state.modal = 'version';
+          toast('请先选择两个版本再查看对比。');
+          return;
+        }
+        if (base === targetVersion) {
+          toast('版本对比需要选择两个不同版本。');
+          return;
+        }
+        state.compareVersionA = base;
+        state.compareVersionB = targetVersion;
+        state.modal = 'diff';
+      } else if (action === 'openVersion') {
+        state.modal = 'version';
+      } else if (action === 'saveSkill') {
+        if (!skill.desc.trim()) {
+          toast('Skill 描述为必填项。');
+          return;
+        }
+        state.versionAction = 'save';
+        state.versionSource = null;
+        state.modal = 'versionSave';
+      } else if (action === 'publishSkill') {
+        if (!skill.desc.trim()) {
+          toast('Skill 描述为必填项。');
+          return;
+        }
+        state.versionAction = 'publish';
+        state.versionSource = null;
+        state.modal = 'versionSave';
+      } else if (action === 'confirmVersionSave') {
+        const ok = commitVersionForm(skill);
+        if (ok) {
+          const message = state.versionAction === 'publish'
+            ? `保存并发布成功，当前版本已更新为 ${skill.version}。`
+            : state.versionAction === 'copy'
+              ? `已复制为新草稿版本 ${skill.version}，页面已刷新。`
+              : `保存成功，当前草稿版本已更新为 ${skill.version}。`;
+          state.modal = null;
+          state.versionSource = null;
+          state.editTab = 'edit';
+          state.detailMode = 'edit';
+          toast(message);
+        }
+      } else if (action === 'copyVersion') {
+        state.versionAction = 'copy';
+        state.versionSource = target.dataset.version;
+        state.modal = 'versionSave';
+      } else if (action === 'requestRollbackToVersion') {
+        state.rollbackTargetVersion = target.dataset.version;
+        state.modal = 'rollbackConfirm';
+      } else if (action === 'confirmRollbackToVersion') {
+        const ok = rollbackToVersion(skill, state.rollbackTargetVersion);
+        if (ok) {
+          state.modal = null;
+          state.rollbackTargetVersion = null;
+          state.editTab = 'edit';
+          state.detailMode = 'edit';
+          toast(`已回退到 ${skill.version}，该版本之后的历史记录已清除。`);
+        }
+      } else if (action === 'generateOptimize') {
+        if (isOfficial(skill)) {
+          toast('官方 Skill 不能直接优化。');
+          return;
+        }
+        if (!(skill.records || []).length) {
+          toast('暂无调用记录，无法生成优化建议。');
+          return;
+        }
+        state.optimizeDraft = null;
+        state.modal = 'optimize';
+      } else if (action === 'executeOptimize') {
+        const records = [...(skill.records || [])].sort((a, b) => String(b.time).localeCompare(String(a.time)));
+        const count = Math.min(Number(document.getElementById('optimizeRecordCount')?.value || 5), records.length);
+        const model = document.getElementById('optimizeModel')?.value || 'ds-v4-codingplan';
+        state.optimizeModel = model;
+        state.optimizeRecordCount = count;
+        const currentBody = (skill.files['SKILL.md'] || '').replace(/^---\n[\s\S]*?\n---\n*/, '').trim();
+        state.optimizeDraft = {
+          model,
+          count,
+          files: {
+            'SKILL.md': `---\nname: ${skill.name}\ndescription: ${skill.desc}\n---\n\n${currentBody || `# ${skill.name}`}\n\n## 调用记录优化草稿\n- 基于最新 ${count} 次调用记录，补充失败原因识别、输出边界和用户追问处理。\n- 成功调用需输出可复用结论；失败调用需输出缺失上下文和下一步追问。\n`,
+            'reference.md': `${skill.files['reference.md'] || '# Reference\\n'}\n## 调用经验规则\n- 优化模型：${model}\n- 采样记录：最新 ${count} 次调用\n- 失败调用需要优先补充输入缺口判断。\n`
+          }
+        };
+      } else if (action === 'acceptOptimize') {
+        if (!state.optimizeDraft) return;
+        applyAiDraft(skill, state.optimizeDraft.files);
+        state.modal = null;
+        state.optimizeDraft = null;
+        state.editTab = 'edit';
+        state.detailMode = 'edit';
+        toast('已接受优化草稿并写入编辑态，可撤销、仅保存或保存并发布。');
+      } else if (action === 'rejectOptimize') {
+        state.optimizeDraft = null;
+        state.modal = null;
+        toast('已拒绝优化草稿。');
+      } else if (action === 'rollbackVersion') {
+        if (state.rollbackSnapshot) {
+          skill.version = nextVersion(skill.version);
+          skill.files = JSON.parse(JSON.stringify(state.rollbackSnapshot.files));
+          skill.name = state.rollbackSnapshot.name;
+          skill.desc = state.rollbackSnapshot.desc;
+          skill.status = 'draft';
+          skill.updated = nowText();
+          skill.dirty = false;
+          skill.versions.unshift({ version: skill.version, time: nowText(), status: '回滚草稿' });
+          toast(`已基于 ${state.rollbackSnapshot.version} 生成回滚草稿 ${skill.version}。`);
+          state.rollbackSnapshot = null;
+          state.editTab = 'edit';
+          state.detailMode = 'edit';
+          state.debugOpen = false;
+        }
+      } else if (action === 'assistantModify') {
+        const prompt = document.getElementById('modifyPrompt')?.value.trim() || '补充 Skill 的场景、输入输出和失败处理规则。';
+        const generatedName = skill.name && skill.name !== '未命名 Skill' && !skill.name.includes('草稿') ? skill.name : 'AI 生成 Skill';
+        const generatedDesc = prompt.length > 90 ? prompt.slice(0, 90) + '...' : prompt;
+        const currentBody = (skill.files['SKILL.md'] || '').replace(/^---\n[\s\S]*?\n---\n*/, '').trim();
+        applyAiDraft(skill, {
+          'SKILL.md': `---\nname: ${generatedName}\ndescription: ${generatedDesc}\n---\n\n${currentBody || `# ${generatedName}`}\n\n## AI 修改\n- ${prompt}\n- 明确适用场景、输入信息、输出格式和失败处理。\n`,
+          'reference.md': `${skill.files['reference.md'] || '# Reference\\n'}\n## AI 补充规则\n- 本次修改来源：${prompt}\n`
+        });
+        toast('AI 修改已写入编辑态，名称和描述已从 SKILL.md 同步到表单。');
+      } else if (action === 'undoAiChange') {
+        if (!skill.aiUndoSnapshot) {
+          toast('暂无可撤销的 AI 修改。');
+          return;
+        }
+        applySkillSnapshot(skill, skill.aiUndoSnapshot);
+        skill.aiUndoSnapshot = null;
+        applyMarkdownMetaToSkill(skill);
+        toast('已撤销本次 AI 修改，文件和表单已同步恢复。');
+      } else if (action === 'mockAttach') {
+        const type = target.dataset.type;
+        toast(`已模拟添加${type}，本次调试会随请求传递。`);
+      } else if (action === 'sendDebug') {
+        const input = document.getElementById('debugPrompt');
+        const text = input?.value.trim();
+        if (!text) {
+          toast('请输入测试问题。');
+          return;
+        }
+        if (!hasSkillDocContent(skill)) {
+          toast('暂无 SKILL.md 内容，无法调试。');
+          return;
+        }
+        if (!skill.debugMessages) skill.debugMessages = [];
+        if (skill.debugMessages.length) skill.debugMessages.push({ divider: true });
+        skill.debugMessages.push({ role: 'user', text });
+        const debugVersion = skill.dirty ? `${skill.version}-temp` : skill.version;
+        const answer = `已使用当前技能文件进行调试，包含${skill.dirty ? '未保存的 AI/手动修改' : '已保存版本'} ${debugVersion}。本次是全新 session，输入为：${text}。`;
+        skill.debugMessages.push({ role: 'assistant', text: answer });
+        input.value = '';
+        toast('调试完成：本轮不继承上下文，记录仅保留在当前详情页。');
+      } else if (action === 'openSession') {
+        state.sessionId = target.dataset.id;
+        state.modal = 'session';
+      }
+
+      render();
+    });
+
+    document.addEventListener('change', (event) => {
+      const target = event.target;
+      const action = target.dataset.action;
+      const skill = getSkill();
+      if (action === 'statusFilter') {
+        state.statusFilter = target.value;
+        render();
+      } else if (action === 'toggleVision') {
+        skill.modelVision = target.checked;
+        if (!skill.modelVision) skill.supportedTypes = skill.supportedTypes.filter(type => type !== 'image');
+        render();
+      } else if (action === 'toggleType') {
+        const type = target.dataset.type;
+        if (target.checked && !skill.supportedTypes.includes(type)) skill.supportedTypes.push(type);
+        if (!target.checked) skill.supportedTypes = skill.supportedTypes.filter(item => item !== type);
+        render();
+      } else if (action === 'realImportFiles') {
+        const names = Array.from(target.files || []).map(file => file.name);
+        state.importItems = names.map((name, index) => {
+          const base = name.replace(/\.zip$/i, '').toLowerCase();
+          const valid = /^[a-z][a-z0-9_-]*$/.test(base);
+          return {
+            file: name,
+            name: valid ? base : '',
+            desc: valid ? `从 ${name} 的 SKILL.md description 自动读取的描述。` : '',
+            valid,
+            reason: valid ? '' : '文件包内 SKILL.md 的 name 不符合命名规范，或无法读取 name 字段。'
+          };
+        });
+        render();
+      }
+    });
+
+    document.addEventListener('input', (event) => {
+      const target = event.target;
+      const action = target.dataset.action;
+      const skill = getSkill();
+      if (action === 'search') {
+        state.query = target.value;
+        render();
+      } else if (action === 'createPrompt') {
+        state.createPrompt = target.value;
+      } else if (action === 'fieldInput') {
+        skill[target.dataset.field] = target.value;
+        syncSkillMarkdown(skill);
+        if (state.selectedFile === 'SKILL.md') {
+          const editor = document.querySelector?.('[data-action="fileContent"]');
+          if (editor) editor.value = skill.files['SKILL.md'] || '';
+        }
+        markDirty(skill);
+      } else if (action === 'fileContent') {
+        skill.files[state.selectedFile] = target.value;
+        if (state.selectedFile === 'SKILL.md') applyMarkdownMetaToSkill(skill);
+        markDirty(skill);
+      }
+    });
+
+    document.addEventListener('mouseover', (event) => {
+      const card = event.target.closest?.('.skill-card');
+      if (card) card.classList.add('actions-visible');
+    });
+
+    document.addEventListener('mouseout', (event) => {
+      const card = event.target.closest?.('.skill-card');
+      if (card && !card.contains(event.relatedTarget)) card.classList.remove('actions-visible');
+    });
+
+    document.addEventListener('focusin', (event) => {
+      const card = event.target.closest?.('.skill-card');
+      if (card) card.classList.add('actions-visible');
+    });
+
+    document.addEventListener('focusout', (event) => {
+      const card = event.target.closest?.('.skill-card');
+      if (card && !card.contains(event.relatedTarget)) card.classList.remove('actions-visible');
+    });
+
+    document.addEventListener('compositionstart', (event) => {
+      if (event.target.matches('[data-enter-submit]')) state.isComposing = true;
+    });
+
+    document.addEventListener('compositionend', (event) => {
+      if (event.target.matches('[data-enter-submit]')) state.isComposing = false;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      const target = event.target;
+      if (!target.matches('[data-enter-submit]')) return;
+      if (event.key !== 'Enter' || event.shiftKey || state.isComposing || event.isComposing) return;
+      event.preventDefault();
+      const type = target.dataset.enterSubmit;
+      if (type === 'create') {
+        document.querySelector('[data-action="submitCreate"]')?.click();
+      } else if (type === 'debug') {
+        document.querySelector('[data-action="sendDebug"]')?.click();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

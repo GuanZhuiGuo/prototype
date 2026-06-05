@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>会话记忆库 - 产品原型</title>
+<style>
+  :root{
+    --primary:#2f6bff;
+    --primary-hover:#1a56f0;
+    --primary-light:#eef3ff;
+    --text-main:#1f2329;
+    --text-sub:#646a73;
+    --text-placeholder:#a0a4ab;
+    --border:#e5e6eb;
+    --border-light:#f0f1f2;
+    --bg:#f5f7fa;
+    --bg-card:#ffffff;
+    --danger:#f54a45;
+    --success:#33b850;
+    --radius:10px;
+    --shadow:0 2px 12px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--text-main);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .app{min-height:100vh;}
+  /* 顶部蓝色渐变背景模拟 */
+  .page-head{
+    background:linear-gradient(180deg,#eaf1ff 0%,#f5f7fa 120px);
+    padding:32px 40px 0;
+  }
+  .hidden{display:none !important;}
+
+  /* ---------- 列表页 ---------- */
+  .lib-title{font-size:24px;font-weight:700;color:var(--text-main);}
+  .lib-desc{color:var(--text-sub);margin-top:8px;font-size:13px;}
+  .toolbar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin:24px 0;
+  }
+  .search-box{
+    position:relative;width:380px;
+  }
+  .search-box input{
+    width:100%;height:40px;border:1px solid var(--border);border-radius:8px;
+    padding:0 40px 0 14px;font-size:14px;background:#fff;outline:none;
+  }
+  .search-box input:focus{border-color:var(--primary);}
+  .search-box .ico{position:absolute;right:14px;top:11px;color:var(--text-placeholder);}
+  .btn{
+    height:40px;padding:0 18px;border-radius:8px;border:none;cursor:pointer;
+    font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;
+    transition:.15s;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-hover);}
+  .btn-default{background:#fff;color:var(--text-main);border:1px solid var(--border);}
+  .btn-default:hover{border-color:var(--primary);color:var(--primary);}
+  .btn-text{background:none;color:var(--primary);padding:0 8px;height:auto;}
+  .btn-text.danger{color:var(--danger);}
+  .btn-sm{height:32px;padding:0 14px;font-size:13px;}
+
+  .lib-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+    padding:0 40px 40px;
+  }
+  .lib-card{
+    background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius);
+    padding:24px;cursor:pointer;transition:.18s;position:relative;
+    box-shadow:0 1px 4px rgba(0,0,0,.03);
+  }
+  .lib-card:hover{box-shadow:var(--shadow);transform:translateY(-2px);border-color:#dde3ff;}
+  .lib-card h3{font-size:18px;font-weight:600;margin-bottom:18px;}
+  .lib-card .meta-label{color:var(--text-sub);font-size:13px;margin-bottom:6px;}
+  .lib-card .bound{font-size:14px;color:var(--text-main);min-height:22px;}
+  .lib-card .tag{
+    display:inline-block;background:var(--primary-light);color:var(--primary);
+    border-radius:4px;padding:2px 8px;font-size:12px;margin:2px 4px 2px 0;
+  }
+  .lib-card .stat{
+    display:flex;gap:24px;margin:14px 0;padding:14px 0;
+    border-top:1px dashed var(--border);border-bottom:1px dashed var(--border);
+  }
+  .lib-card .stat .num{font-size:20px;font-weight:700;color:var(--primary);}
+  .lib-card .stat .lbl{font-size:12px;color:var(--text-sub);}
+  .lib-card .card-desc{
+    margin:14px 0;padding:14px 0;font-size:13px;color:var(--text-sub);line-height:1.6;
+    border-top:1px dashed var(--border);border-bottom:1px dashed var(--border);
+    min-height:48px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .lib-card .foot{
+    display:flex;justify-content:space-between;align-items:center;
+    color:var(--text-placeholder);font-size:12px;margin-top:10px;
+  }
+  .card-actions{position:absolute;bottom:16px;right:18px;display:none;gap:8px;background:#fff;padding-left:8px;}
+  .lib-card:hover .card-actions{display:flex;}
+  .card-actions .txt-btn{
+    height:28px;padding:0 12px;border-radius:6px;border:1px solid var(--border);
+    background:#fff;cursor:pointer;font-size:12px;color:var(--text-sub);
+    display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .card-actions .txt-btn:hover{color:var(--primary);border-color:var(--primary);}
+  .card-actions .txt-btn.danger{color:var(--danger);}
+  .card-actions .txt-btn.danger:hover{color:#fff;background:var(--danger);border-color:var(--danger);}
+
+  /* ---------- 详情页 ---------- */
+  .detail-head{
+    padding:24px 40px 0;
+    background:linear-gradient(180deg,#eaf1ff 0%,#f5f7fa 100px);
+  }
+  .back-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .back-btn{cursor:pointer;color:var(--text-sub);font-size:18px;}
+  .detail-title{font-size:22px;font-weight:700;}
+  .mode-badge{
+    font-size:12px;padding:2px 10px;border-radius:10px;font-weight:500;margin-left:8px;
+  }
+  .mode-badge.view{background:#e8f5ec;color:var(--success);}
+  .mode-badge.edit{background:#fff3e0;color:#f5821f;}
+  .mode-badge.create{background:var(--primary-light);color:var(--primary);}
+  .detail-head-actions{margin-left:auto;display:flex;gap:10px;}
+
+  /* 顶部紧凑基本信息条（需求2） */
+  .info-bar{
+    background:#fff;border:1px solid var(--border-light);border-radius:10px;
+    padding:14px 18px;margin-top:14px;box-shadow:0 1px 4px rgba(0,0,0,.03);
+  }
+  .info-bar-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  .info-bar-item{display:flex;align-items:center;gap:8px;font-size:13px;min-height:30px;}
+  .info-bar-item .ib-label{color:var(--text-sub);white-space:nowrap;}
+  .info-bar-item .ib-value{color:var(--text-main);font-weight:500;}
+  .info-bar-item .ib-value .muted{color:var(--text-placeholder);font-weight:400;}
+  .info-bar .ib-input{height:30px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;outline:none;}
+  .info-bar .ib-input:focus{border-color:var(--primary);}
+  .info-bar .ib-input.name{width:200px;}
+  .info-bar .ib-input.desc{width:300px;}
+  .info-bar .ib-edit-btn{margin-left:auto;}
+  .info-bar .divider{width:1px;height:16px;background:var(--border);}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);padding:0 40px;margin-top:18px;background:transparent;}
+  .tab{
+    padding:12px 18px;cursor:pointer;font-size:15px;color:var(--text-sub);
+    border-bottom:2px solid transparent;font-weight:500;
+  }
+  .tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+  .tab.disabled{color:var(--text-placeholder);cursor:not-allowed;}
+
+  .detail-body{padding:24px 40px 60px;}
+
+  /* 基本信息卡片 */
+  .info-card{
+    background:#fff;border:1px solid var(--border-light);border-radius:var(--radius);
+    padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.03);
+  }
+  .info-card .sec-title{font-size:16px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+  .info-card .sec-title::before{content:"";width:3px;height:15px;background:var(--primary);border-radius:2px;}
+  .form-row{margin-bottom:18px;}
+  .form-row label{display:block;font-size:13px;color:var(--text-main);margin-bottom:8px;}
+  .form-row label .req{color:var(--danger);margin-right:3px;}
+  .form-row .tip{color:var(--text-placeholder);font-size:12px;margin-left:6px;}
+  .input,.textarea,.select{
+    width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+    font-size:14px;outline:none;font-family:inherit;background:#fff;
+  }
+  .input:focus,.textarea:focus,.select:focus{border-color:var(--primary);}
+  .input:disabled,.textarea:disabled{background:#f7f8fa;color:var(--text-main);cursor:default;border-color:var(--border-light);}
+  .textarea{resize:vertical;min-height:80px;}
+  .info-readonly .input,.info-readonly .textarea{background:#f7f8fa;color:var(--text-main);border-color:var(--border-light);}
+  .field-static{font-size:14px;color:var(--text-main);padding:4px 0;}
+  .field-static .muted{color:var(--text-placeholder);}
+
+  /* 策略列表区 */
+  .strategy-toolbar{
+    display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .filter-group{display:flex;align-items:center;gap:8px;}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .seg button{
+    border:none;background:#fff;padding:7px 16px;cursor:pointer;font-size:13px;color:var(--text-sub);
+    border-right:1px solid var(--border);
+  }
+  .seg button:last-child{border-right:none;}
+  .seg button.active{background:var(--primary);color:#fff;}
+  .mini-select{
+    height:36px;border:1px solid var(--border);border-radius:8px;padding:0 10px;
+    font-size:13px;background:#fff;outline:none;color:var(--text-main);
+  }
+  .strategy-toolbar .grow{flex:1;}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);overflow:hidden;}
+  thead th{
+    background:#fafbfc;text-align:left;padding:13px 16px;font-size:13px;color:var(--text-sub);
+    font-weight:500;border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:14px 16px;border-bottom:1px solid var(--border-light);font-size:14px;vertical-align:middle;}
+  tbody tr:hover{background:#fafbff;}
+  .pill{display:inline-block;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:500;}
+  .pill.portrait{background:#fdf0ff;color:#b537c9;}
+  .pill.event{background:#e9f3ff;color:#2f6bff;}
+  .pill.global{background:#fff4e6;color:#f5821f;}
+  .pill.domain{background:#e8f5ec;color:#33b850;}
+  .empty-state{text-align:center;padding:60px 0;color:var(--text-placeholder);}
+  .empty-state .ico{font-size:40px;opacity:.4;}
+  .desc-cell{color:var(--text-sub);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  /* 用户记忆 */
+  .um-layout{display:flex;gap:0;background:#fff;border:1px solid var(--border-light);border-radius:var(--radius);overflow:hidden;min-height:420px;}
+  .um-side{width:260px;border-right:1px solid var(--border-light);padding:16px;}
+  .um-side .search-box{width:100%;margin-bottom:12px;}
+  .um-side .search-box input{height:36px;}
+  .um-user{padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;align-items:center;}
+  .um-user:hover{background:var(--bg);}
+  .um-user.active{background:var(--primary-light);color:var(--primary);font-weight:600;}
+  .um-user .uid{font-size:12px;color:var(--text-placeholder);}
+  .um-main{flex:1;padding:24px;}
+  .um-mem-group{margin-bottom:24px;}
+  .um-mem-group h4{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .um-mem-item{
+    background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:10px;
+    display:flex;justify-content:space-between;gap:12px;
+  }
+  .um-mem-item .k{color:var(--text-sub);font-size:13px;min-width:120px;}
+  .um-mem-item .v{flex:1;font-size:14px;}
+  .um-mem-item .t{color:var(--text-placeholder);font-size:12px;white-space:nowrap;}
+
+  /* ---------- 弹窗 ---------- */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;}
+  .modal{background:#fff;border-radius:12px;width:640px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.18);}
+  .modal.wide{width:760px;}
+  .modal-head{padding:20px 24px;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center;}
+  .modal-head h3{font-size:18px;font-weight:600;}
+  .modal-head .close{cursor:pointer;font-size:20px;color:var(--text-sub);}
+  .modal-body{padding:24px;overflow-y:auto;}
+  .modal-foot{padding:16px 24px;border-top:1px solid var(--border-light);display:flex;justify-content:flex-end;gap:12px;}
+
+  /* 类型选择卡片 */
+  .type-cards{display:flex;gap:14px;margin-bottom:6px;}
+  .type-card{
+    flex:1;border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.15s;
+  }
+  .type-card:hover{border-color:#c2d2ff;}
+  .type-card.active{border-color:var(--primary);background:var(--primary-light);}
+  .type-card.disabled{opacity:.5;cursor:not-allowed;background:#fafafa;}
+  .type-card .tc-title{font-weight:600;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .type-card .tc-desc{font-size:12px;color:var(--text-sub);line-height:1.5;}
+  .type-warn{background:#fff8e6;border:1px solid #ffe2a8;color:#b06d00;border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;}
+
+  .scope-radio{display:flex;gap:12px;}
+  /* 普通 radio button（需求2） */
+  .radio-group{display:flex;gap:28px;align-items:center;padding:4px 0;}
+  .radio-item{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:14px;}
+  .radio-item.ro{cursor:default;color:var(--text-sub);}
+  .radio-item input[type=radio]{width:16px;height:16px;accent-color:var(--primary);cursor:inherit;}
+  .radio-tip{font-size:12px;color:var(--text-placeholder);margin-top:8px;}
+
+  .prompt-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .prompt-head .tpl-btn{font-size:12px;color:var(--primary);cursor:pointer;}
+  .validity{display:flex;gap:10px;}
+  .validity .v-opt{padding:8px 18px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;}
+  .validity .v-opt.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+
+  /* 策略状态开关 */
+  .switch{position:relative;display:inline-block;width:38px;height:20px;cursor:pointer;vertical-align:middle;}
+  .switch input{opacity:0;width:0;height:0;}
+  .switch-slider{position:absolute;inset:0;background:#c9ced6;border-radius:20px;transition:.2s;}
+  .switch-slider:before{content:"";position:absolute;height:16px;width:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .switch input:checked + .switch-slider{background:var(--primary);}
+  .switch input:checked + .switch-slider:before{transform:translateX(18px);}
+  tr.row-off td:not(:nth-last-child(2)):not(:last-child){opacity:.55;}
+  .lock-tip{font-weight:400;color:var(--text-placeholder);font-size:12px;margin-left:4px;}
+
+  .toast{
+    position:fixed;top:24px;left:50%;transform:translateX(-50%);
+    background:rgba(0,0,0,.8);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;z-index:200;
+    display:none;
+  }
+  .char-count{float:right;color:var(--text-placeholder);font-size:12px;}
+  .domain-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .domain-tags .dt{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:3px 12px;font-size:12px;cursor:pointer;}
+  .domain-tags .dt.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary);}
+  .save-bar{
+    position:sticky;bottom:0;background:#fff;border-top:1px solid var(--border);
+    padding:14px 40px;display:flex;justify-content:flex-end;gap:12px;margin:0 -40px -60px;
+  }
+
+  .prototype-nav{
+    height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:0 32px;border-bottom:1px solid #e5e6eb;background:rgba(255,255,255,.96);
+    box-shadow:0 1px 6px rgba(31,35,41,.04);position:relative;z-index:1000;
+  }
+  .prototype-nav__brand{color:#1f2329;font-size:15px;font-weight:700;white-space:nowrap;}
+  .prototype-nav__links{display:flex;align-items:center;gap:6px;}
+  .prototype-nav__links a{
+    height:32px;display:inline-flex;align-items:center;padding:0 14px;border-radius:7px;
+    color:#646a73;text-decoration:none;font-size:14px;font-weight:600;
+  }
+  .prototype-nav__links a:hover{color:#2f6bff;background:#eef3ff;}
+  .prototype-nav__links a.active{color:#2f6bff;background:#e8efff;}
+</style>
+</head>
+<body>
+<nav class="prototype-nav" aria-label="原型页面导航">
+  <div class="prototype-nav__brand">产品原型</div>
+  <div class="prototype-nav__links">
+    <a href="./mcp-page.html">MCP</a>
+    <a href="./skill.html">Skill</a>
+    <a class="active" href="./memory-prototype.html">记忆</a>
+  </div>
+</nav>
+<div class="app">
+
+  <!-- ============ 列表页 ============ -->
+  <div id="page-list">
+    <div class="page-head">
+      <div class="lib-title">会话记忆库</div>
+      <div class="lib-desc">存储记忆数据的数据库，存储包括记忆提取策略和提取出的记忆详情</div>
+      <div class="toolbar">
+        <div class="search-box">
+          <input id="libSearch" placeholder="名称搜索" oninput="renderLibList()">
+          <span class="ico">⌕</span>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateLib()">＋ 新建记忆库</button>
+      </div>
+    </div>
+    <div class="lib-grid" id="libGrid"></div>
+  </div>
+
+  <!-- ============ 详情页 ============ -->
+  <div id="page-detail" class="hidden">
+    <div class="detail-head">
+      <div class="back-row">
+        <span class="back-btn" onclick="backToList()">‹</span>
+        <span class="detail-title" id="detailTitle">记忆库</span>
+        <div class="detail-head-actions" id="headActions"></div>
+      </div>
+      <!-- 需求2：基本信息放顶部，紧凑信息条 -->
+      <div id="detailInfoBar"></div>
+    </div>
+    <div class="tabs" id="detailTabs"></div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- 模态容器 -->
+<div id="modalRoot"></div>
+
+<script>
+/* ===================== Mock 数据 ===================== */
+const MODEL_OPTIONS = ["Doubao-Seed-2.0-pro","Doubao-Seed-1.6","GPT-4o","Claude-3.7-Sonnet"];
+const DOMAIN_OPTIONS = ["电商导购","客服助手","旅行规划","健康管理","教育辅导"];
+
+// 预设提示词模板
+const PROMPT_TEMPLATES = {
+  event: `# 角色
+你是一个用户行为记忆抽取专家，负责从用户与智能体的多轮对话中，抽取出客观、可追溯的「事件记忆」。
+
+# 抽取目标
+基于用户行为进行语义化聚合，沉淀为基础记忆层，支撑后续画像记忆的推理。
+
+# 抽取规则
+1. 仅抽取明确发生的事实与行为，不做主观推断；
+2. 每条记忆需包含：时间、主体、行为/事件、对象、来源会话；
+3. 对相似行为进行语义聚合，避免冗余；
+4. 涉及隐私敏感信息（证件号、银行卡等）一律不抽取；
+5. 输出 JSON 数组，字段：{event, time, detail, source}。
+
+# 输出示例
+[{"event":"用户咨询商品","time":"2026-06-01","detail":"询问iPhone16价格","source":"session_001"}]`,
+  portrait: `# 角色
+你是一个用户画像归纳专家，负责基于已沉淀的「事件记忆」推理归纳出高阶的「画像记忆」。
+
+# 抽取目标
+沉淀主体的长期特征与稳定认知（如偏好、习惯、身份属性等），形成可复用的画像标签。
+
+# 抽取规则
+1. 必须基于关联的事件记忆进行推理，不可凭空生成；
+2. 只输出具备长期稳定性的特征，剔除偶发行为；
+3. 每条画像需给出：标签名、标签值、置信度、推理依据（引用事件记忆）；
+4. 当证据不足时，confidence 标记为 low，不强行下结论；
+5. 输出 JSON 数组，字段：{label, value, confidence, evidence}。
+
+# 输出示例
+[{"label":"消费偏好","value":"偏好高端数码产品","confidence":"high","evidence":["多次咨询旗舰机型"]}]`
+};
+
+let LIBS = [
+  {
+    id:1, name:"123", desc:"主站电商导购记忆库", updater:"admin", updateTime:"2026-06-04 19:36:25",
+    agents:["导购助手A","客服Bot"],
+    strategies:[
+      {id:101,type:"event",scope:"global",name:"user_behavior",display:"用户行为事件",desc:"聚合用户浏览与咨询行为",model:"Doubao-Seed-2.0-pro",defaultVal:"",prompt:PROMPT_TEMPLATES.event,validity:"permanent",domain:null,updater:"admin",updateTime:"2026-06-03 10:20:11",relEvent:null,enabled:true},
+      {id:102,type:"portrait",scope:"global",name:"user_profile",display:"用户消费画像",desc:"基于行为推理的长期消费偏好",model:"Doubao-Seed-2.0-pro",defaultVal:"未知",prompt:PROMPT_TEMPLATES.portrait,validity:"permanent",domain:null,updater:"admin",updateTime:"2026-06-04 11:02:33",relEvent:101,enabled:true},
+      {id:103,type:"event",scope:"domain",name:"order_intent",display:"下单意图事件",desc:"仅本智能体内部使用的下单意图抽取",model:"Doubao-Seed-1.6",defaultVal:"",prompt:PROMPT_TEMPLATES.event,validity:"month",domain:null,updater:"admin",updateTime:"2026-06-02 16:44:00",relEvent:null,enabled:false}
+    ],
+    users:[
+      {id:"u_88001",name:"张三",mems:{
+        portrait:[{k:"消费偏好",v:"偏好高端数码产品",t:"2026-06-04"},{k:"活跃时段",v:"晚间 20:00-23:00",t:"2026-06-03"}],
+        event:[{k:"用户咨询商品",v:"询问 iPhone16 价格与库存",t:"2026-06-01"},{k:"用户下单",v:"购买无线耳机×1",t:"2026-05-28"}]
+      }},
+      {id:"u_88002",name:"李四",mems:{
+        portrait:[{k:"消费偏好",v:"价格敏感，关注促销",t:"2026-06-02"}],
+        event:[{k:"用户领券",v:"领取满300减50券",t:"2026-06-02"}]
+      }}
+    ]
+  },
+  {
+    id:2, name:"记忆库2", desc:"", updater:"admin", updateTime:"2026-06-04 13:52:21",
+    agents:[], strategies:[], users:[]
+  },
+  {
+    id:3, name:"测试", desc:"测试用途", updater:"admin", updateTime:"2026-06-02 16:32:51",
+    agents:[], strategies:[
+      {id:301,type:"event",scope:"global",name:"test_event",display:"测试事件",desc:"",model:"Doubao-Seed-2.0-pro",defaultVal:"",prompt:PROMPT_TEMPLATES.event,validity:"week",domain:null,updater:"admin",updateTime:"2026-06-02 16:30:00",relEvent:null,enabled:true}
+    ], users:[]
+  }
+];
+
+let nextLibId = 100, nextStrId = 1000;
+
+/* ===================== 全局状态 ===================== */
+let state = {
+  currentLib:null,      // 当前详情库对象
+  mode:"view",          // view | edit | create
+  activeTab:"info",     // info | strategy | user
+  strategyFilter:"all", // all | global | domain
+  typeFilter:"all",     // all | event | portrait
+  activeUser:null
+};
+
+/* ===================== 工具函数 ===================== */
+function $(id){return document.getElementById(id);}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function toast(msg){const t=$("toast");t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",1800);}
+function typePill(t){return t==="portrait"?'<span class="pill portrait">画像记忆</span>':'<span class="pill event">事件记忆</span>';}
+function scopePill(s){return s==="global"?'<span class="pill global">全局</span>':'<span class="pill domain">领域</span>';}
+function validityText(v){return {permanent:"永久",week:"一周",month:"一个月",custom:"自定义"}[v]||v;}
+function now(){const d=new Date(2026,5,4,22,4);return d.toLocaleString('zh-CN',{hour12:false}).replace(/\//g,'-');}
+
+/* ===================== 列表页 ===================== */
+function renderLibList(){
+  const kw=($("libSearch").value||"").trim().toLowerCase();
+  const grid=$("libGrid");
+  const list=LIBS.filter(l=>l.name.toLowerCase().includes(kw));
+  if(!list.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="ico">📂</div><div>暂无记忆库</div></div>';return;}
+  grid.innerHTML=list.map(l=>{
+    const agents=l.agents.length?l.agents.map(a=>`<span class="tag">${esc(a)}</span>`).join(''):'<span style="color:var(--text-placeholder)">无</span>';
+    return `<div class="lib-card" onclick="openDetail(${l.id},'view')">
+      <div class="card-actions">
+        <button class="txt-btn" onclick="event.stopPropagation();openDetail(${l.id},'edit')">编辑</button>
+        <button class="txt-btn danger" onclick="event.stopPropagation();delLib(${l.id})">删除</button>
+      </div>
+      <h3>${esc(l.name)}</h3>
+      <div class="meta-label">已绑定的智能体</div>
+      <div class="bound">${agents}</div>
+      <div class="card-desc">${l.desc?esc(l.desc):'<span style="color:var(--text-placeholder)">暂无描述</span>'}</div>
+      <div class="foot"><span>更新人：${esc(l.updater)}</span><span>${esc(l.updateTime)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function delLib(id){
+  const lib=LIBS.find(l=>l.id===id);
+  if(!lib)return;
+  let msg;
+  if(lib.agents&&lib.agents.length){
+    msg=`该记忆库已绑定了【${lib.agents.join('、')}】，是否确认删除？\n删除后，相关智能体记忆配置将被删除。`;
+  }else{
+    msg="该记忆库暂未绑定任何智能体，是否确认删除？\n删除后其下所有记忆策略与用户记忆将一并清除。";
+  }
+  if(confirm(msg)){
+    LIBS=LIBS.filter(l=>l.id!==id);renderLibList();toast("已删除");
+  }
+}
+
+/* ===================== 新建记忆库 —— 需求1：直达策略编辑态 ===================== */
+function openCreateLib(){
+  // 直接创建一个空白库进入 create 模式（基本信息可编辑 + 策略新增）
+  const lib={id:nextLibId++,name:"",desc:"",updater:"admin",updateTime:now(),agents:[],strategies:[],users:[],_isNew:true};
+  state.currentLib=lib;state.mode="create";state.activeTab="strategy";state.infoEditing=false;
+  showDetail();
+}
+
+/* ===================== 打开详情 ===================== */
+function openDetail(id,mode){
+  const lib=LIBS.find(l=>l.id===id);
+  state.infoEditing=false;
+  // 深拷贝用于编辑态草稿，view 直接引用
+  state.currentLib=mode==='view'?lib:JSON.parse(JSON.stringify(lib));
+  state.currentLib._origId=id;
+  state.mode=mode;state.activeTab='strategy';
+  state.activeUser=lib.users&&lib.users.length?lib.users[0].id:null;
+  showDetail();
+}
+function backToList(){
+  if(state.mode!=='view' && confirm("当前修改尚未保存，确认离开？")===false)return;
+  $("page-detail").classList.add("hidden");$("page-list").classList.remove("hidden");
+  renderLibList();
+}
+
+function showDetail(){
+  $("page-list").classList.add("hidden");
+  $("page-detail").classList.remove("hidden");
+  const lib=state.currentLib;
+  $("detailTitle").textContent=lib._isNew?"新建记忆库":lib.name;
+
+  // 顶部不再放操作按钮
+  $("headActions").innerHTML="";
+
+  renderInfoBar();
+  renderTabs();renderTabBody();
+}
+
+/* ---------- 顶部紧凑基本信息条（需求1+2） ---------- */
+function renderInfoBar(){
+  const lib=state.currentLib;
+  const bar=$("detailInfoBar");
+  const editing = state.mode!=='view' || state.infoEditing;
+
+  // 需求1：新建/编辑态不展示已绑定 agent（必然为空），仅查看态展示
+  let agentItem='';
+  if(state.mode==='view'){
+    const agentsView=lib.agents.length?lib.agents.map(a=>`<span class="pill event" style="margin-right:4px">${esc(a)}</span>`).join(''):'<span class="muted">无</span>';
+    agentItem=`<div class="divider"></div><div class="info-bar-item"><span class="ib-label">已绑定智能体</span><span class="ib-value">${agentsView}</span></div>`;
+  }
+
+  if(editing){
+    bar.innerHTML=`<div class="info-bar">
+      <div class="info-bar-row">
+        <div class="info-bar-item"><span class="ib-label"><span style="color:var(--danger)">*</span>名称</span>
+          <input class="ib-input name" id="f_name" value="${esc(lib.name)}" placeholder="请输入记忆库名称" maxlength="50"></div>
+        <div class="info-bar-item"><span class="ib-label">描述</span>
+          <input class="ib-input desc" id="f_desc" value="${esc(lib.desc)}" placeholder="请输入描述" maxlength="400"></div>
+        <div class="info-bar-item ib-edit-btn">
+          ${state.mode==='create'
+            ?`<button class="btn btn-default btn-sm" onclick="backToList()">取消</button><button class="btn btn-primary btn-sm" onclick="saveLibInfo()">保存并配置策略</button>`
+            :`<button class="btn btn-default btn-sm" onclick="cancelInfoEdit()">取消</button><button class="btn btn-primary btn-sm" onclick="saveLibInfo()">保存</button>`}
+        </div>
+      </div>
+    </div>`;
+  }else{
+    bar.innerHTML=`<div class="info-bar">
+      <div class="info-bar-row">
+        <div class="info-bar-item"><span class="ib-label">名称</span><span class="ib-value">${esc(lib.name)}</span></div>
+        <div class="divider"></div>
+        <div class="info-bar-item"><span class="ib-label">描述</span><span class="ib-value">${lib.desc?esc(lib.desc):'<span class="muted">无</span>'}</span></div>
+        ${agentItem}
+        <div class="divider"></div>
+        <div class="info-bar-item"><span class="ib-label">更新</span><span class="ib-value"><span class="muted">${esc(lib.updater)} · ${esc(lib.updateTime)}</span></span></div>
+        <div class="info-bar-item ib-edit-btn"><button class="btn btn-default btn-sm" onclick="startInfoEdit()">编辑</button></div>
+      </div>
+    </div>`;
+  }
+}
+
+/* 需求5：查看态才有「用户记忆」Tab；基本信息已移至顶部，不再是 Tab */
+function renderTabs(){
+  const tabs=$("detailTabs");
+  let arr=[{k:"strategy",label:"记忆策略"}];
+  if(state.mode==='view') arr.push({k:"user",label:"用户记忆"});
+  tabs.innerHTML=arr.map(t=>`<div class="tab ${state.activeTab===t.k?'active':''}" onclick="switchTab('${t.k}')">${t.label}</div>`).join('');
+}
+function switchTab(k){state.activeTab=k;renderTabs();renderTabBody();}
+
+function renderTabBody(){
+  const b=$("detailBody");
+  if(state.activeTab==='strategy')b.innerHTML=renderStrategy();
+  else b.innerHTML=renderUserMem();
+}
+
+function startInfoEdit(){state.infoEditing=true;renderInfoBar();}
+function cancelInfoEdit(){
+  state.infoEditing=false;
+  // 还原显示（查看态 currentLib 是引用，需从 LIBS 重新取，避免输入框未保存的中间态）
+  renderInfoBar();
+}
+
+function saveLibInfo(){
+  const lib=state.currentLib;
+  const name=$("f_name").value.trim();
+  if(!name){toast("请填写记忆库名称");return;}
+  lib.name=name;lib.desc=$("f_desc").value.trim();lib.updateTime=now();
+  if(state.mode==='create'){
+    // 落库（清除新建标记）
+    lib._isNew=false;
+    LIBS.unshift({...lib});
+    // 切到编辑态，定位到记忆策略 Tab
+    state.mode='edit';state.currentLib=LIBS[0];state.currentLib._origId=LIBS[0].id;state.currentLib._isNew=false;
+    state.activeTab='strategy';
+    showDetail();
+    toast("记忆库已创建，请配置记忆策略");
+    // 需求：保存基本信息后直接弹出新建策略弹窗
+    openStrategyModal();
+  }else{
+    // 编辑态/查看态局部编辑保存：写回原库
+    const idx=LIBS.findIndex(l=>l.id===(lib._origId||lib.id));
+    if(idx>=0){LIBS[idx].name=lib.name;LIBS[idx].desc=lib.desc;LIBS[idx].updateTime=lib.updateTime;}
+    state.infoEditing=false;
+    $("detailTitle").textContent=lib.name;
+    toast("基本信息已保存");
+    renderInfoBar();
+  }
+}
+
+/* ---------- 记忆策略列表（需求2/3/4：作用域字段化 + 1:N 内嵌管理） ---------- */
+function renderStrategy(){
+  const lib=state.currentLib;
+  const editable=state.mode!=='view';
+
+  // 需求：新建态未保存基本信息前，不展示策略区，改为引导提示
+  if(state.mode==='create' && lib._isNew){
+    return `<div class="empty-state" style="padding:80px 0">
+      <div class="ico">🗂️</div>
+      <div style="margin-top:8px">请先在顶部填写记忆库基本信息</div>
+      <div style="margin-top:6px;color:var(--text-placeholder);font-size:13px">点击「保存并配置策略」后，将自动弹出新建策略</div>
+    </div>`;
+  }
+
+  let list=lib.strategies.slice();
+  if(state.strategyFilter!=='all')list=list.filter(s=>s.scope===state.strategyFilter);
+  if(state.typeFilter!=='all')list=list.filter(s=>s.type===state.typeFilter);
+
+  const rows=list.length?list.map(s=>{
+    const relName=s.relEvent?(lib.strategies.find(x=>x.id===s.relEvent)?.display||'-'):'-';
+    // 需求3：记忆策略的编辑按钮始终在每行操作栏（查看态也可编辑）
+    const ops=`<button class="btn-text" onclick="openStrategyModal(${s.id})">编辑</button><button class="btn-text danger" onclick="delStrategy(${s.id})">删除</button>`;
+    const on=s.enabled!==false;
+    const sw=`<label class="switch" title="${on?'已启用，点击停用':'已停用，点击启用'}">
+      <input type="checkbox" ${on?'checked':''} onchange="toggleStrategy(${s.id})">
+      <span class="switch-slider"></span>
+    </label>`;
+    return `<tr class="${on?'':'row-off'}">
+      <td><b>${esc(s.display)}</b><div style="color:var(--text-placeholder);font-size:12px">${esc(s.name)}</div></td>
+      <td>${typePill(s.type)}</td>
+      <td>${scopePill(s.scope)}</td>
+      <td>${s.type==='portrait'?esc(relName):'<span style="color:var(--text-placeholder)">—</span>'}</td>
+      <td class="desc-cell" title="${esc(s.desc)}">${esc(s.desc)||'<span style="color:var(--text-placeholder)">—</span>'}</td>
+      <td>${validityText(s.validity)}</td>
+      <td>${sw}</td>
+      <td>${esc(s.updateTime)}</td>
+      <td>${ops}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="9"><div class="empty-state"><div class="ico">🗂️</div><div>暂无记忆策略，点击右上角「新建策略」开始配置</div></div></td></tr>`;
+
+  return `<div class="strategy-toolbar">
+    <div class="filter-group">
+      <span style="color:var(--text-sub);font-size:13px">共享范围</span>
+      <div class="seg">
+        <button class="${state.strategyFilter==='all'?'active':''}" onclick="setFilter('scope','all')">全部</button>
+        <button class="${state.strategyFilter==='domain'?'active':''}" onclick="setFilter('scope','domain')">领域</button>
+        <button class="${state.strategyFilter==='global'?'active':''}" onclick="setFilter('scope','global')">全局</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span style="color:var(--text-sub);font-size:13px">类型</span>
+      <div class="seg">
+        <button class="${state.typeFilter==='all'?'active':''}" onclick="setFilter('type','all')">全部</button>
+        <button class="${state.typeFilter==='event'?'active':''}" onclick="setFilter('type','event')">事件记忆</button>
+        <button class="${state.typeFilter==='portrait'?'active':''}" onclick="setFilter('type','portrait')">画像记忆</button>
+      </div>
+    </div>
+    <div class="grow"></div>
+    <button class="btn btn-primary btn-sm" onclick="openStrategyModal()">＋ 新建策略</button>
+  </div>
+  <table>
+    <thead><tr>
+      <th>名称 / 字符名</th><th>类型</th><th>共享范围</th><th>关联事件记忆</th><th>描述</th><th>有效期</th><th>状态</th><th>更新时间</th><th>操作</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+function setFilter(kind,val){if(kind==='scope')state.strategyFilter=val;else state.typeFilter=val;renderTabBody();}
+
+function persistLib(lib){
+  if(state.mode==='edit'||state.mode==='create'){const idx=LIBS.findIndex(l=>l.id===lib._origId);if(idx>=0)LIBS[idx]=JSON.parse(JSON.stringify(lib));}
+  else{const idx=LIBS.findIndex(l=>l.id===lib.id);if(idx>=0)LIBS[idx]=JSON.parse(JSON.stringify(lib));}
+}
+
+function toggleStrategy(id){
+  const lib=state.currentLib;
+  const s=lib.strategies.find(x=>x.id===id);
+  if(!s)return;
+  const turningOff=s.enabled!==false; // 当前为开启，本次操作是「关闭」
+
+  // 事件记忆关闭校验：存在关联它且仍开启的画像记忆 → 二次确认，将一同关闭
+  if(turningOff && s.type==='event'){
+    const linkedOn=lib.strategies.filter(x=>x.type==='portrait'&&x.relEvent===id&&x.enabled!==false);
+    if(linkedOn.length){
+      const names=linkedOn.map(x=>`「${x.display}」`).join('、');
+      const ok=confirm(`关联它的画像记忆 ${names} 将一同被关闭，是否确认关闭？\n如需保留画像记忆，请先解除关联后重试。`);
+      if(!ok){renderTabBody();return;} // 取消：还原开关 UI
+      linkedOn.forEach(x=>{x.enabled=false;x.updateTime=now();});
+    }
+  }
+
+  s.enabled=s.enabled===false; // 取反：原停用→启用，原启用→停用
+  s.updateTime=now();
+  persistLib(lib);
+  renderTabBody();
+  toast(s.enabled?"策略已启用":"策略已停用");
+}
+
+function delStrategy(id){
+  const lib=state.currentLib;
+  const s=lib.strategies.find(x=>x.id===id);
+  if(!s)return;
+
+  // 事件记忆删除校验：存在关联它的画像记忆 → 二次确认，将一同删除
+  if(s.type==='event'){
+    const linked=lib.strategies.filter(x=>x.type==='portrait'&&x.relEvent===id);
+    if(linked.length){
+      const names=linked.map(x=>`「${x.display}」`).join('、');
+      const ok=confirm(`关联它的画像记忆 ${names} 将一同被删除，是否确认删除？\n如需保留画像记忆，请先解除关联后重试。`);
+      if(!ok)return;
+      const linkedIds=linked.map(x=>x.id);
+      lib.strategies=lib.strategies.filter(x=>x.id!==id && !linkedIds.includes(x.id));
+      persistLib(lib);
+      renderTabBody();toast("已删除（含关联画像记忆）");
+      return;
+    }
+  }
+
+  if(confirm("确认删除该记忆策略？")){
+    lib.strategies=lib.strategies.filter(x=>x.id!==id);
+    persistLib(lib);
+    renderTabBody();toast("已删除");
+  }
+}
+
+/* ---------- 新建/编辑记忆策略弹窗（需求3：类型依赖 + 需求6：模板） ---------- */
+let editingStrategy=null, modalReadonly=false;
+function openStrategyModal(id,readonly){
+  const lib=state.currentLib;
+  modalReadonly=!!readonly;
+  if(id){
+    editingStrategy=JSON.parse(JSON.stringify(lib.strategies.find(s=>s.id===id)));
+  }else{
+    editingStrategy={id:null,type:"event",scope:"global",name:"",display:"",desc:"",model:MODEL_OPTIONS[0],defaultVal:"",prompt:PROMPT_TEMPLATES.event,validity:"permanent",domain:null,relEvent:null,enabled:true};
+  }
+  renderStrategyModal();
+}
+
+function renderStrategyModal(){
+  const s=editingStrategy;const lib=state.currentLib;const ro=modalReadonly;
+  const dis=ro?'disabled':'';
+  // 需求：编辑已有策略时，类型与共享范围不可修改（仅查看态或编辑态置灰）
+  const lockTS=ro||!!s.id;
+  const eventList=lib.strategies.filter(x=>x.type==='event');
+  const hasEvent=eventList.length>0;
+
+  // 需求3：画像记忆需先有事件记忆，否则禁用画像选项
+  const portraitDisabled=!hasEvent && s.type!=='portrait';
+
+  const relOptions=eventList.map(e=>`<option value="${e.id}" ${s.relEvent===e.id?'selected':''}>${esc(e.display)}（${esc(e.name)}）</option>`).join('');
+
+  const html=`<div class="mask" onclick="if(event.target===this)closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <h3>${ro?'查看记忆策略':(s.id?'编辑记忆策略':'新建记忆策略')}</h3>
+        <span class="close" onclick="closeModal()">×</span>
+      </div>
+      <div class="modal-body">
+        <!-- 类型：需求2 普通 radio -->
+        <div class="form-row">
+          <label><span class="req">*</span>类型${lockTS&&!ro?'<span class="lock-tip">（创建后不可修改）</span>':''}</label>
+          <div class="radio-group">
+            <label class="radio-item ${lockTS?'ro':''}">
+              <input type="radio" name="strategyType" value="event" ${s.type==='event'?'checked':''} ${lockTS?'disabled':''} data-act="changeType" data-arg="event">
+              <span>事件记忆</span>
+            </label>
+            <label class="radio-item ${lockTS||portraitDisabled?'ro':''}">
+              <input type="radio" name="strategyType" value="portrait" ${s.type==='portrait'?'checked':''} ${lockTS||portraitDisabled?'disabled':''} data-act="changeType" data-arg="portrait">
+              <span>画像记忆</span>
+            </label>
+          </div>
+          <div class="radio-tip">${s.type==='portrait'?'基于事件记忆推理归纳形成的高阶记忆，沉淀主体的长期特征与稳定认知':'基于用户行为语义化聚合的基础记忆层，支撑画像记忆推理'}</div>
+        </div>
+        ${portraitDisabled&&!lockTS?'<div class="type-warn">⚠️ 当前记忆库还没有「事件记忆」。画像记忆需基于事件记忆推理，请先创建至少一条事件记忆后再配置画像记忆。</div>':''}
+
+        <!-- 共享范围：需求3 重定义，无需选择领域 -->
+        <div class="form-row">
+          <label><span class="req">*</span>共享范围${lockTS&&!ro?'<span class="lock-tip">（创建后不可修改）</span>':''}</label>
+          <div class="radio-group">
+            <label class="radio-item ${lockTS?'ro':''}">
+              <input type="radio" name="strategyScope" value="domain" ${s.scope==='domain'?'checked':''} ${lockTS?'disabled':''} data-act="changeScope" data-arg="domain">
+              <span>领域</span>
+            </label>
+            <label class="radio-item ${lockTS?'ro':''}">
+              <input type="radio" name="strategyScope" value="global" ${s.scope==='global'?'checked':''} ${lockTS?'disabled':''} data-act="changeScope" data-arg="global">
+              <span>全局</span>
+            </label>
+          </div>
+          <div class="radio-tip">${s.scope==='global'?'全局：该记忆在关联的多个智能体之间共享互通':'领域：该记忆仅在当前智能体内部使用，不对外共享'}</div>
+        </div>
+
+        <!-- 字符名 / 展示名 -->
+        <div class="form-row">
+          <label><span class="req">*</span>字符名 <span class="tip">支持中英文、数字和下划线</span></label>
+          <input class="input" id="s_name" value="${esc(s.name)}" ${dis} maxlength="50" placeholder="记忆名称（系统唯一标识）">
+        </div>
+        <div class="form-row">
+          <label><span class="req">*</span>展示名 <span class="tip">展示在列表中的名称</span></label>
+          <input class="input" id="s_display" value="${esc(s.display)}" ${dis} maxlength="50" placeholder="展示名称">
+        </div>
+
+        <!-- 关联事件记忆：仅画像记忆出现，需求3 -->
+        ${s.type==='portrait'?`<div class="form-row">
+          <label><span class="req">*</span>关联事件记忆</label>
+          <select class="select" id="s_rel" ${dis}>
+            <option value="">请选择关联事件记忆</option>${relOptions}
+          </select>
+        </div>`:''}
+
+        <!-- 描述 -->
+        <div class="form-row">
+          <label><span class="req">*</span>描述</label>
+          <textarea class="textarea" id="s_desc" ${dis} maxlength="400" placeholder="记忆的描述介绍，仅用于介绍区分该记忆的用途">${esc(s.desc)}</textarea>
+        </div>
+
+        <!-- 模型 -->
+        <div class="form-row">
+          <label><span class="req">*</span>模型</label>
+          <select class="select" id="s_model" ${dis}>${MODEL_OPTIONS.map(m=>`<option ${s.model===m?'selected':''}>${m}</option>`).join('')}</select>
+        </div>
+
+        <!-- 默认值：仅画像记忆 -->
+        ${s.type==='portrait'?`<div class="form-row">
+          <label>默认值 <span class="tip">未抽取到记忆时的兜底值</span></label>
+          <input class="input" id="s_default" value="${esc(s.defaultVal)}" ${dis} maxlength="50" placeholder="支持中英文、数字配置">
+        </div>`:''}
+
+        <!-- 记忆提取规则 + 模板：需求6 -->
+        <div class="form-row">
+          <div class="prompt-head">
+            <label style="margin:0"><span class="req">*</span>记忆提取规则（提示词）</label>
+            ${ro?'':`<span class="tpl-btn" onclick="applyTemplate()">↺ 恢复${s.type==='portrait'?'画像':'事件'}记忆预设模板</span>`}
+          </div>
+          <textarea class="textarea" id="s_prompt" ${dis} style="min-height:160px;font-family:monospace;font-size:12px" maxlength="2000" placeholder="请输入记忆的提取规则">${esc(s.prompt)}</textarea>
+        </div>
+
+        <!-- 有效期 -->
+        <div class="form-row" style="margin-bottom:0">
+          <label><span class="req">*</span>记忆有效期配置</label>
+          <div class="validity">
+            ${['permanent','week','month','custom'].map(v=>`<div class="v-opt ${s.validity===v?'active':''}" ${ro?'':`data-act="pickValidity" data-arg="${v}"`}>${validityText(v)}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-default" onclick="closeModal()">${ro?'关闭':'取消'}</button>
+        ${ro?'':`<button class="btn btn-primary" onclick="saveStrategy(false)">保存</button>
+        ${!s.id?'<button class="btn btn-primary" onclick="saveStrategy(true)">保存并继续增加策略</button>':''}`}
+      </div>
+    </div>
+  </div>`;
+  $("modalRoot").innerHTML=html;
+  // 事件委托：处理弹窗内所有 data-act 点击，避免 onclick 引号嵌套问题
+  const root=$("modalRoot");
+  root.querySelectorAll('[data-act]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const act=el.getAttribute('data-act');
+      const arg=el.getAttribute('data-arg');
+      ({changeType,changeScope,pickValidity})[act](arg);
+    });
+  });
+}
+
+function syncFromModal(){
+  if(!$("s_name"))return;
+  const s=editingStrategy;
+  s.name=$("s_name").value;s.display=$("s_display").value;s.desc=$("s_desc").value;
+  s.model=$("s_model").value;s.prompt=$("s_prompt").value;
+  if($("s_default"))s.defaultVal=$("s_default").value;
+  if($("s_rel"))s.relEvent=$("s_rel").value?parseInt($("s_rel").value):null;
+}
+function changeType(t){syncFromModal();editingStrategy.type=t;
+  // 切换类型时若提示词仍是另一模板则自动替换为对应模板
+  editingStrategy.prompt=PROMPT_TEMPLATES[t];
+  if(t==='event'){editingStrategy.relEvent=null;}
+  renderStrategyModal();
+}
+function changeScope(sc){syncFromModal();editingStrategy.scope=sc;renderStrategyModal();}
+function pickValidity(v){syncFromModal();editingStrategy.validity=v;renderStrategyModal();}
+function applyTemplate(){syncFromModal();editingStrategy.prompt=PROMPT_TEMPLATES[editingStrategy.type];renderStrategyModal();toast("已恢复预设模板");}
+function closeModal(){$("modalRoot").innerHTML="";editingStrategy=null;}
+
+function saveStrategy(keepOpen){
+  syncFromModal();
+  const s=editingStrategy;const lib=state.currentLib;
+  if(!s.name.trim()){toast("请填写字符名");return;}
+  if(!s.display.trim()){toast("请填写展示名");return;}
+  if(!s.desc.trim()){toast("请填写描述");return;}
+  if(s.type==='portrait'&&!s.relEvent){toast("画像记忆必须关联一条事件记忆");return;}
+  if(!s.prompt.trim()){toast("请填写记忆提取规则");return;}
+  s.updater="admin";s.updateTime=now();
+  if(s.id){
+    const idx=lib.strategies.findIndex(x=>x.id===s.id);lib.strategies[idx]=s;
+  }else{
+    s.id=nextStrId++;lib.strategies.push(s);
+  }
+  // 写回主数据
+  if(state.mode==='edit'||state.mode==='create'){
+    const idx=LIBS.findIndex(l=>l.id===lib._origId);if(idx>=0)LIBS[idx]=JSON.parse(JSON.stringify(lib));
+  }
+  // 同步刷新列表底层（确保后续打开看到最新数据）
+  renderTabBody();
+  if(keepOpen){
+    // 保存并继续增加策略：重置为一条新的空白策略，弹窗保持打开
+    toast("已保存，可继续新增");
+    openStrategyModal();
+  }else{
+    closeModal();toast("策略已保存");
+  }
+}
+
+/* ---------- 用户记忆（需求5） ---------- */
+function renderUserMem(){
+  const lib=state.currentLib;
+  if(!lib.users||!lib.users.length){
+    return `<div class="um-layout">
+      <div class="um-side"><div class="search-box"><input placeholder="输入ID搜索"><span class="ico">⌕</span></div>
+        <div class="empty-state"><div class="ico">📄</div><div>暂无用户</div></div></div>
+      <div class="um-main"><div class="empty-state" style="margin-top:120px">请从左侧选择一个用户或者搜索用户</div></div>
+    </div>`;
+  }
+  if(!state.activeUser)state.activeUser=lib.users[0].id;
+  const side=lib.users.map(u=>`<div class="um-user ${state.activeUser===u.id?'active':''}" onclick="state.activeUser='${u.id}';renderTabBody()">
+    <span>${esc(u.name)}</span><span class="uid">${esc(u.id)}</span></div>`).join('');
+  const user=lib.users.find(u=>u.id===state.activeUser);
+  const portraitMems=(user.mems.portrait||[]).map(m=>`<div class="um-mem-item"><span class="k">${esc(m.k)}</span><span class="v">${esc(m.v)}</span><span class="t">${esc(m.t)}</span></div>`).join('')||'<div style="color:var(--text-placeholder);font-size:13px">暂无</div>';
+  const eventMems=(user.mems.event||[]).map(m=>`<div class="um-mem-item"><span class="k">${esc(m.k)}</span><span class="v">${esc(m.v)}</span><span class="t">${esc(m.t)}</span></div>`).join('')||'<div style="color:var(--text-placeholder);font-size:13px">暂无</div>';
+  return `<div class="um-layout">
+    <div class="um-side">
+      <div class="search-box"><input placeholder="输入ID搜索"><span class="ico">⌕</span></div>
+      ${side}
+    </div>
+    <div class="um-main">
+      <div class="um-mem-group">
+        <h4>${typePill('portrait')} 画像记忆</h4>${portraitMems}
+      </div>
+      <div class="um-mem-group">
+        <h4>${typePill('event')} 事件记忆</h4>${eventMems}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ===================== 初始化 ===================== */
+renderLibList();
+</script>
+</body>
+</html>

@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP 管理中心</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root{
+      --primary:#2f6bff;
+      --primary-hover:#1a56f0;
+      --primary-light:#eef3ff;
+      --text-main:#1f2329;
+      --text-sub:#646a73;
+      --text-placeholder:#a0a4ab;
+      --border:#e5e6eb;
+      --border-light:#f0f1f2;
+      --bg:#f5f7fa;
+      --danger:#f54a45;
+      --success:#33b850;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    }
+    .fade-in {
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .slide-in-right {
+      animation: slideInRight 0.3s ease-out;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    /* ===== 与「会话记忆库」一致的设计语言 ===== */
+    /* 详情页顶部蓝色渐变背景条 */
+    .detail-head{
+      background:linear-gradient(180deg,#eaf1ff 0%, var(--bg) 110px);
+      padding:24px 0 0;
+      margin:-24px -24px 0;            /* 抵消 main 的 padding，铺满顶部 */
+      padding-left:24px;padding-right:24px;
+    }
+    .back-btn-mira{
+      width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+      background:#fff;color:var(--text-sub);display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:.15s;
+    }
+    .back-btn-mira:hover{color:var(--primary);border-color:var(--primary);background:var(--primary-light);}
+
+    /* 顶部紧凑基本信息条 */
+    .info-bar{
+      background:#fff;border:1px solid var(--border-light);border-radius:10px;
+      padding:14px 18px;margin-top:14px;box-shadow:0 1px 4px rgba(0,0,0,.03);
+    }
+    .info-bar-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+    .ib-item{display:flex;align-items:center;gap:8px;font-size:13px;min-height:32px;}
+    .ib-label{color:var(--text-sub);white-space:nowrap;}
+    .ib-label .req{color:var(--danger);margin-right:3px;}
+    .ib-value{color:var(--text-main);font-weight:500;}
+    .ib-value .muted{color:var(--text-placeholder);font-weight:400;}
+    .ib-divider{width:1px;height:16px;background:var(--border);}
+    .ib-input{height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;outline:none;font-family:inherit;}
+    .ib-input:focus{border-color:var(--primary);}
+    .ib-input.name{width:220px;}
+    .ib-input.desc{width:280px;}
+    .ib-input.endpoint{width:340px;font-family:monospace;}
+    .ib-actions{margin-left:auto;display:flex;gap:8px;}
+    .ib-pill{
+      display:inline-block;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:500;
+    }
+    .ib-pill.api{background:var(--primary-light);color:var(--primary);}
+    .ib-pill.register{background:#e8f5ec;color:var(--success);}
+
+    /* tab 容器（与记忆模块一致：下划线高亮） */
+    .mira-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-top:18px;}
+    .mira-tab{
+      padding:12px 18px;cursor:pointer;font-size:15px;color:var(--text-sub);
+      border-bottom:2px solid transparent;font-weight:500;display:flex;align-items:center;gap:6px;
+    }
+    .mira-tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+
+    /* 区块标题（左侧蓝色竖条） */
+    .sec-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;}
+    .sec-title::before{content:"";width:3px;height:15px;background:var(--primary);border-radius:2px;}
+
+    /* 小号文本按钮 */
+    .mira-btn-sm{height:32px;padding:0 14px;font-size:13px;border-radius:8px;}
+
+    .prototype-nav{
+      height:52px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+      padding:0 32px;border-bottom:1px solid #e5e6eb;background:rgba(255,255,255,.96);
+      box-shadow:0 1px 6px rgba(31,35,41,.04);position:relative;z-index:1000;
+      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    }
+    .prototype-nav__brand{color:#1f2329;font-size:15px;font-weight:700;white-space:nowrap;}
+    .prototype-nav__links{display:flex;align-items:center;gap:6px;}
+    .prototype-nav__links a{
+      height:32px;display:inline-flex;align-items:center;padding:0 14px;border-radius:7px;
+      color:#646a73;text-decoration:none;font-size:14px;font-weight:600;
+    }
+    .prototype-nav__links a:hover{color:#2f6bff;background:#eef3ff;}
+    .prototype-nav__links a.active{color:#2f6bff;background:#e8efff;}
+  </style>
+</head>
+<body>
+  <nav class="prototype-nav" aria-label="原型页面导航">
+    <div class="prototype-nav__brand">产品原型</div>
+    <div class="prototype-nav__links">
+      <a class="active" href="./mcp-page.html">MCP</a>
+      <a href="./skill.html">Skill</a>
+      <a href="./memory-prototype.html">记忆</a>
+    </div>
+  </nav>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- Mock Data ---
+    const initialMcps = [
+      {
+        id: '1',
+        name: '企业知识引擎（按需配置）',
+        description: '企业知识引擎（按需配置）',
+        endpoint: 'http://sophon-mcp.minibase-llm.svc:8889/sophon/mcp/f309...',
+        source: '接口代理',
+        sourceType: 'api',
+        type: 'sse',
+        auth: false,
+        jsonConfig: '{\n  "mcpServers": {\n    "f309e6161a004e2f": {\n      "url": "http://sophon-mcp.minibase-llm.svc..."\n    }\n  }\n}',
+        updateTime: '2026-06-01 15:18:12'
+      },
+      {
+        id: '2',
+        name: '企业知识引擎（内置工具）',
+        description: '企业知识引擎（内置工具）',
+        endpoint: 'http://sophon-mcp.minibase-llm.svc:8889/sophon/mcp/cf4b...',
+        source: '接口代理',
+        sourceType: 'api',
+        type: 'sse',
+        auth: false,
+        jsonConfig: '{\n  "mcpServers": { ... }\n}',
+        updateTime: '2026-06-01 15:18:12'
+      },
+      {
+        id: '3',
+        name: '记忆组件服务',
+        description: '记忆应用_工具',
+        endpoint: 'http://sophon-mcp.minibase-llm.svc:8889/sophon/mcp/a275...',
+        source: '注册已有',
+        sourceType: 'register',
+        type: 'sse',
+        auth: true,
+        updateTime: '2026-06-01 15:18:12'
+      }
+    ];
+
+    const initialTools = {
+      '1': [
+        { id: 't1', displayName: '知识检索', identifier: 'knowledge_search', description: '用于检索企业知识库中的文档', requestType: 'HTTP', requestMethod: 'POST', inputSchema: '{\n  "type": "object",\n  "properties": {}\n}' }
+      ],
+      '3': [
+        { id: 't2', displayName: '获取当前时间', identifier: 'get_current_time', description: '获取系统当前时间', requestType: 'HTTP', requestMethod: 'GET', inputSchema: '{\n  "type": "object",\n  "properties": {}\n}' },
+        { id: 't3', displayName: '记忆存储', identifier: 'store_memory', description: '将用户的关键信息存储到长期记忆中', requestType: 'HTTP', requestMethod: 'POST', inputSchema: '{\n  "type": "object",\n  "properties": {\n    "content": {\n      "type": "string"\n    }\n  }\n}' }
+      ]
+    };
+
+    // --- Components ---
+
+    // Icons component (using Lucide)
+    const Icon = ({ name, className = "" }) => {
+      useEffect(() => {
+        lucide.createIcons();
+      });
+      return <i data-lucide={name} className={className}></i>;
+    };
+
+    // Button
+    const Button = ({ children, type = 'default', onClick, className = "", danger = false }) => {
+      const baseStyle = "px-4 py-2 rounded-md font-medium transition-colors duration-200 flex items-center justify-center gap-2";
+      let typeStyle = "";
+      if (type === 'primary') {
+        typeStyle = "bg-blue-600 text-white hover:bg-blue-700";
+      } else if (type === 'default') {
+        typeStyle = danger 
+          ? "bg-white border border-red-500 text-red-500 hover:bg-red-50"
+          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50";
+      } else if (type === 'text') {
+        typeStyle = danger
+          ? "text-red-500 hover:bg-red-50 px-2"
+          : "text-blue-600 hover:bg-blue-50 px-2";
+      }
+      return (
+        <button onClick={onClick} className={`${baseStyle} ${typeStyle} ${className}`}>
+          {children}
+        </button>
+      );
+    };
+
+    // Modal
+    const Modal = ({ title, visible, onClose, onConfirm, confirmText = '确定', extraAction, children }) => {
+      if (!visible) return null;
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center fade-in">
+          <div className="absolute inset-0 bg-black bg-opacity-40" onClick={onClose}></div>
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg z-10 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 py-4 overflow-y-auto">
+              {children}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+              <Button onClick={onClose}>取消</Button>
+              {extraAction}
+              <Button type="primary" onClick={onConfirm}>{confirmText}</Button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Drawer
+    const Drawer = ({ title, visible, onClose, onConfirm, confirmText = '确定', extraAction, children }) => {
+      if (!visible) return null;
+      return (
+        <div className="fixed inset-0 z-50 flex justify-end fade-in">
+          <div className="absolute inset-0 bg-black bg-opacity-40" onClick={onClose}></div>
+          <div className="bg-white w-full max-w-md z-10 flex flex-col slide-in-right h-full shadow-2xl">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              {children}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+              <Button onClick={onClose}>取消</Button>
+              {extraAction}
+              <Button type="primary" onClick={onConfirm}>{confirmText}</Button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Confirm Dialog
+    const ConfirmDialog = ({ visible, title, content, onConfirm, onClose }) => {
+      if (!visible) return null;
+      return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center fade-in">
+          <div className="absolute inset-0 bg-black bg-opacity-40" onClick={onClose}></div>
+          <div className="bg-white rounded-lg shadow-xl w-96 z-10 p-6">
+            <div className="flex gap-3 items-start">
+              <Icon name="alert-circle" className="w-6 h-6 text-orange-500 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+                <p className="text-gray-600 mt-2 text-sm">{content}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button onClick={onClose}>取消</Button>
+              <Button danger onClick={onConfirm}>确定删除</Button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // --- Main App ---
+    const App = () => {
+      const [mcps, setMcps] = useState(initialMcps);
+      const [toolsMap, setToolsMap] = useState(initialTools);
+      const [page, setPage] = useState('list'); // list, detail
+      const [currentMcpId, setCurrentMcpId] = useState(null);
+      const [startInEditMode, setStartInEditMode] = useState(false);
+      const [search, setSearch] = useState('');
+      
+      // Modal states
+      const [registerModalVisible, setRegisterModalVisible] = useState(false);
+      const [editingRegisterId, setEditingRegisterId] = useState(null);
+      const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: null });
+
+      // Form state for register
+      const [registerForm, setRegisterForm] = useState({
+        protocol: 'sse',
+        name: '',
+        description: '',
+        endpoint: '',
+        auth: false
+      });
+
+      // Navigate to detail
+      const goToDetail = (id, editMode = false) => {
+        setCurrentMcpId(id);
+        setStartInEditMode(editMode);
+        setPage('detail');
+      };
+
+      const goToList = () => {
+        setPage('list');
+        setCurrentMcpId(null);
+      };
+
+      const handleDeleteMcp = (id) => {
+        setMcps(mcps.filter(m => m.id !== id));
+        setDeleteConfirm({ visible: false, id: null });
+      };
+
+      const handleRegisterSubmit = (goDebug = false) => {
+        if (!registerForm.name || !registerForm.endpoint) {
+          alert('请填写必填项');
+          return;
+        }
+
+        let targetId = editingRegisterId;
+        if (editingRegisterId) {
+          // Update existing
+          setMcps(mcps.map(m => m.id === editingRegisterId ? {
+            ...m,
+            name: registerForm.name,
+            description: registerForm.description,
+            endpoint: registerForm.endpoint,
+            type: registerForm.protocol,
+            auth: registerForm.auth,
+            updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
+          } : m));
+        } else {
+          // Create new
+          targetId = Date.now().toString();
+          const newMcp = {
+            id: targetId,
+            name: registerForm.name,
+            description: registerForm.description,
+            endpoint: registerForm.endpoint,
+            source: '注册已有',
+            sourceType: 'register',
+            type: registerForm.protocol,
+            auth: registerForm.auth,
+            updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
+          };
+          setMcps([newMcp, ...mcps]);
+          setToolsMap({
+            ...toolsMap,
+            [targetId]: [
+              { id: `debug_${targetId}_1`, displayName: '技术指标信号', identifier: 'technical_signal', description: '基于证券代码和市场，查询其在特定条件下触发的技术指标信号。', requestType: 'HTTP', requestMethod: 'POST', inputSchema: '{\n  "type": "object",\n  "properties": {}\n}' },
+              { id: `debug_${targetId}_2`, displayName: '新闻热点资讯搜索', identifier: 'news_hot_search', description: '根据关键词搜索市场热点新闻和资讯摘要。', requestType: 'HTTP', requestMethod: 'POST', inputSchema: '{\n  "type": "object",\n  "properties": {}\n}' }
+            ]
+          });
+        }
+        
+        setRegisterModalVisible(false);
+        setEditingRegisterId(null);
+        setRegisterForm({ protocol: 'sse', name: '', description: '', endpoint: '', auth: false });
+
+        if (goDebug && targetId) {
+          setCurrentMcpId(targetId);
+          setStartInEditMode(false);
+          setPage('detail');
+        }
+      };
+
+      const handleCreateApi = () => {
+        // Create an empty template and go to detail in "create" mode
+        const newId = 'new_' + Date.now();
+        const newMcp = {
+          id: newId,
+          name: '',
+          description: '',
+          endpoint: '',
+          source: '接口代理',
+          sourceType: 'api',
+          type: 'sse',
+          auth: false,
+          jsonConfig: '',
+          updateTime: '-',
+          isNew: true
+        };
+        setMcps([newMcp, ...mcps]);
+        goToDetail(newId);
+      };
+
+      const filteredMcps = mcps.filter(m => !m.isNew && m.name.toLowerCase().includes(search.toLowerCase()));
+
+      return (
+        <>
+        <div className="min-h-screen flex flex-col">
+          {/* Header */}
+          <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
+                <Icon name="box" className="text-white w-5 h-5" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-800">MCP 管理中心</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
+                A
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+            {page === 'list' && (
+              <div className="fade-in">
+                {/* Toolbar */}
+                <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+                  <div className="relative w-72">
+                    <input 
+                      type="text" 
+                      placeholder="搜索名称" 
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <Icon name="search" className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button onClick={() => {
+                      setEditingRegisterId(null);
+                      setRegisterForm({ protocol: 'sse', name: '', description: '', endpoint: '', auth: false });
+                      setRegisterModalVisible(true);
+                    }}>
+                      <Icon name="link" className="w-4 h-4" />
+                      注册已有 MCP
+                    </Button>
+                    <Button type="primary" onClick={handleCreateApi}>
+                      <Icon name="plus" className="w-4 h-4" />
+                      将接口新建为 MCP
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredMcps.map(mcp => (
+                    <div key={mcp.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col group">
+                      <div className="p-5 border-b border-gray-100 flex-1 cursor-pointer" onClick={() => goToDetail(mcp.id)}>
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1" title={mcp.name}>{mcp.name}</h3>
+                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${mcp.sourceType === 'api' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                            {mcp.source}
+                          </span>
+                        </div>
+                        <p className="text-gray-500 text-sm mb-4 line-clamp-2 h-10">{mcp.description || '暂无描述'}</p>
+                        
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <Icon name="server" className="w-4 h-4 text-gray-400" />
+                            <span className="truncate" title={mcp.endpoint}>{mcp.endpoint || '-'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Icon name="radio" className="w-4 h-4 text-gray-400" />
+                            <span>协议类型：{mcp.type.toUpperCase()}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Icon name="clock" className="w-4 h-4 text-gray-400" />
+                            <span>{mcp.updateTime}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="px-5 py-3 bg-gray-50 flex justify-end gap-2 border-t border-gray-100 opacity-0 pointer-events-none transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
+                        <Button type="text" onClick={(e) => { e.stopPropagation(); goToDetail(mcp.id, true); }}>
+                          编辑
+                        </Button>
+                        <Button type="text" danger onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setDeleteConfirm({ visible: true, id: mcp.id }); 
+                        }}>
+                          删除
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {filteredMcps.length === 0 && (
+                    <div className="col-span-full py-16 flex flex-col items-center justify-center text-gray-500 bg-white rounded-lg border border-gray-200 border-dashed">
+                      <Icon name="inbox" className="w-12 h-12 mb-3 text-gray-300" />
+                      <p>暂无数据</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {page === 'detail' && (
+              <DetailPage 
+                mcp={mcps.find(m => m.id === currentMcpId)} 
+                startInEditMode={startInEditMode}
+                onBack={goToList}
+                onSave={(updatedMcp) => {
+                  setMcps(mcps.map(m => m.id === updatedMcp.id ? { ...updatedMcp, isNew: false, updateTime: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') } : m));
+                }}
+                tools={toolsMap[currentMcpId] || []}
+                onSaveTool={(tool) => {
+                    const currentTools = toolsMap[currentMcpId] || [];
+                    const existingIndex = currentTools.findIndex(t => t.id === tool.id);
+                    if (existingIndex >= 0) {
+                      const newTools = [...currentTools];
+                      newTools[existingIndex] = tool;
+                      setToolsMap({
+                        ...toolsMap,
+                        [currentMcpId]: newTools
+                      });
+                    } else {
+                      setToolsMap({
+                        ...toolsMap,
+                        [currentMcpId]: [...currentTools, tool]
+                      });
+                    }
+                  }}
+                  onDeleteTool={(toolId) => {
+                    const currentTools = toolsMap[currentMcpId] || [];
+                    setToolsMap({
+                      ...toolsMap,
+                      [currentMcpId]: currentTools.filter(t => t.id !== toolId)
+                    });
+                  }}
+              />
+            )}
+          </main>
+        </div>
+
+        {/* Modals */}
+        <Modal 
+          title={editingRegisterId ? "编辑已有 MCP Server" : "注册已有 MCP Server"} 
+          visible={registerModalVisible} 
+          onClose={() => setRegisterModalVisible(false)}
+          onConfirm={() => handleRegisterSubmit(false)}
+          confirmText="保存"
+          extraAction={
+            <Button onClick={() => handleRegisterSubmit(true)}>
+              保存并调试
+            </Button>
+          }
+        >
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>协议</label>
+              <div className="flex gap-4 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="protocol" value="sse" checked={registerForm.protocol === 'sse'} onChange={e => setRegisterForm({...registerForm, protocol: e.target.value})} className="text-blue-600 focus:ring-blue-500" />
+                  <span>SSE</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="protocol" value="streamable" checked={registerForm.protocol === 'streamable'} onChange={e => setRegisterForm({...registerForm, protocol: e.target.value})} className="text-blue-600 focus:ring-blue-500" />
+                  <span>Streamable</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>展示名</label>
+              <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入展示名" value={registerForm.name} onChange={e => setRegisterForm({...registerForm, name: e.target.value})} />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
+              <textarea className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="请输入描述" value={registerForm.description} onChange={e => setRegisterForm({...registerForm, description: e.target.value})}></textarea>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>Endpoint</label>
+              <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="http://..." value={registerForm.endpoint} onChange={e => setRegisterForm({...registerForm, endpoint: e.target.value})} />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">开启鉴权</label>
+              <div className="flex gap-4 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="auth" checked={registerForm.auth === true} onChange={() => setRegisterForm({...registerForm, auth: true})} className="text-blue-600 focus:ring-blue-500" />
+                  <span>开启</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="auth" checked={registerForm.auth === false} onChange={() => setRegisterForm({...registerForm, auth: false})} className="text-blue-600 focus:ring-blue-500" />
+                  <span>关闭</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </Modal>
+
+        <ConfirmDialog 
+          visible={deleteConfirm.visible}
+          title="确认删除"
+          content="确定要删除该 MCP 吗？此操作不可恢复。"
+          onClose={() => setDeleteConfirm({ visible: false, id: null })}
+          onConfirm={() => handleDeleteMcp(deleteConfirm.id)}
+        />
+
+        </>
+      );
+    };
+
+    // --- Detail Page Component ---
+    const DetailPage = ({ mcp, startInEditMode, onBack, onSave, tools, onSaveTool, onDeleteTool }) => {
+      const isNew = mcp.isNew;
+      const isApiSource = mcp.sourceType === 'api';
+      
+      const [formData, setFormData] = useState({ ...mcp });
+      const [isEditing, setIsEditing] = useState(isNew || startInEditMode);
+      const [activeTab, setActiveTab] = useState('tools');
+      const [createToolVisible, setCreateToolVisible] = useState(false);
+      const [editingToolId, setEditingToolId] = useState(null);
+      const [selectedToolId, setSelectedToolId] = useState(tools[0]?.id || '');
+      const [debugParams, setDebugParams] = useState('{\n  "code": null,\n  "interval": null,\n  "start_date": null,\n  "src": null\n}');
+      const [debugResult, setDebugResult] = useState('');
+      
+      const [toolForm, setToolForm] = useState({
+        displayName: '',
+        identifier: '',
+        description: '',
+        inputSchema: '{\n  "type": "object",\n  "properties": {\n    "param1": {\n      "type": "string",\n      "description": "parameter 1"\n    }\n  }\n}',
+        requestType: 'HTTP',
+        requestMethod: 'POST'
+      });
+
+      const resetToolForm = () => {
+        setEditingToolId(null);
+        setToolForm({
+          displayName: '',
+          identifier: '',
+          description: '',
+          inputSchema: '{\n  "type": "object",\n  "properties": {}\n}',
+          requestType: 'HTTP',
+          requestMethod: 'POST'
+        });
+      };
+
+      const openCreateToolDrawer = () => {
+        resetToolForm();
+        setCreateToolVisible(true);
+      };
+
+      const handleSave = (openToolAfterSave = false) => {
+        if (!formData.name) {
+          alert('展示名不能为空');
+          return;
+        }
+        onSave(formData);
+        setIsEditing(false);
+        if (openToolAfterSave) {
+          openCreateToolDrawer();
+        }
+      };
+
+      const handleCreateToolSubmit = (continueCreate = false) => {
+        if (!toolForm.displayName || !toolForm.identifier) {
+          alert('请填写必填项');
+          return;
+        }
+        onSaveTool({
+          id: editingToolId || ('t' + Date.now()),
+          ...toolForm
+        });
+        resetToolForm();
+        setCreateToolVisible(continueCreate);
+      };
+
+      const handleEditTool = (tool) => {
+        setToolForm({
+          displayName: tool.displayName,
+          identifier: tool.identifier,
+          description: tool.description || '',
+          inputSchema: tool.inputSchema || '{\n  "type": "object",\n  "properties": {}\n}',
+          requestType: tool.requestType || 'HTTP',
+          requestMethod: tool.requestMethod || 'POST'
+        });
+        setEditingToolId(tool.id);
+        setCreateToolVisible(false);
+        setTimeout(() => setCreateToolVisible(true), 0);
+      };
+
+      const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => alert('已复制'));
+      };
+
+      const selectedTool = tools.find(tool => tool.id === selectedToolId) || tools[0];
+      const handleRunTool = () => {
+        const toolName = selectedTool?.displayName || 'Tool';
+        setDebugResult(`{
+  "status": "success",
+  "tool": "${toolName}",
+  "elapsed_ms": 186,
+  "data": {
+    "summary": "这是基于输入参数返回的模拟调试结果",
+    "input": ${debugParams || '{}'}
+  }
+}`);
+      };
+
+      return (
+        <div className="fade-in">
+          {/* ===== 顶部渐变头 + 紧凑基本信息条（对齐记忆模块） ===== */}
+          <div className="detail-head">
+            <div className="flex items-center gap-3">
+              <button onClick={onBack} className="back-btn-mira" title="返回">
+                <Icon name="chevron-left" className="w-5 h-5" />
+              </button>
+              <h2 className="text-[22px] font-bold text-gray-900">{isNew ? '新建 MCP' : (formData.name || '未命名 MCP')}</h2>
+              {!isNew && (
+                <span className={`ib-pill ${isApiSource ? 'api' : 'register'}`}>{formData.source}</span>
+              )}
+            </div>
+
+            {/* 紧凑基本信息条 */}
+            {isEditing ? (
+              <div className="info-bar">
+                <div className="info-bar-row">
+                  <div className="ib-item">
+                    <span className="ib-label"><span className="req">*</span>展示名</span>
+                    <input className="ib-input name" placeholder="请输入展示名" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                  </div>
+                  <div className="ib-item">
+                    <span className="ib-label">描述</span>
+                    <input className="ib-input desc" placeholder="请输入描述" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+                  </div>
+                  <div className="ib-item">
+                    <span className="ib-label">Endpoint</span>
+                    <input className="ib-input endpoint" placeholder="http://..." value={formData.endpoint} onChange={e => setFormData({...formData, endpoint: e.target.value})} />
+                  </div>
+                  <div className="ib-item">
+                    <span className="ib-label">协议</span>
+                    <select className="ib-input" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                      <option value="sse">SSE</option>
+                      <option value="streamable">Streamable</option>
+                    </select>
+                  </div>
+                  <div className="ib-item">
+                    <span className="ib-label">鉴权</span>
+                    <select className="ib-input" value={formData.auth ? 'true' : 'false'} onChange={e => setFormData({...formData, auth: e.target.value === 'true'})}>
+                      <option value="true">开启</option>
+                      <option value="false">关闭</option>
+                    </select>
+                  </div>
+                  <div className="ib-actions">
+                    {!isNew && <Button type="default" className="mira-btn-sm" onClick={() => { setFormData({...mcp}); setIsEditing(false); }}>取消</Button>}
+                    {isNew && <Button type="default" className="mira-btn-sm" onClick={onBack}>取消</Button>}
+                    <Button type="primary" className="mira-btn-sm" onClick={() => handleSave(isNew && isApiSource)}>
+                      <Icon name="save" className="w-4 h-4" />{isNew && isApiSource ? '保存并新增 Tool' : '保存'}
+                    </Button>
+                  </div>
+                </div>
+                {isApiSource && (
+                  <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
+                    <div className="ib-item items-start">
+                      <span className="ib-label mt-2">JSON 配置</span>
+                      <textarea className="ib-input flex-1" style={{height:'90px',fontFamily:'monospace',paddingTop:'6px'}} value={formData.jsonConfig} onChange={e => setFormData({...formData, jsonConfig: e.target.value})}></textarea>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="info-bar">
+                <div className="info-bar-row">
+                  <div className="ib-item"><span className="ib-label">展示名</span><span className="ib-value">{formData.name || <span className="muted">未命名</span>}</span></div>
+                  <div className="ib-divider"></div>
+                  <div className="ib-item"><span className="ib-label">描述</span><span className="ib-value">{formData.description || <span className="muted">无</span>}</span></div>
+                  <div className="ib-divider"></div>
+                  <div className="ib-item">
+                    <span className="ib-label">Endpoint</span>
+                    <span className="ib-value font-mono text-[12px] break-all max-w-[320px] truncate" title={formData.endpoint}>{formData.endpoint || <span className="muted">-</span>}</span>
+                    {formData.endpoint && (
+                      <button onClick={() => copyToClipboard(formData.endpoint)} className="text-blue-500 hover:text-blue-700 shrink-0" title="复制"><Icon name="copy" className="w-3.5 h-3.5" /></button>
+                    )}
+                  </div>
+                  <div className="ib-divider"></div>
+                  <div className="ib-item"><span className="ib-label">协议</span><span className="ib-value">{(formData.type || '').toUpperCase()}</span></div>
+                  <div className="ib-divider"></div>
+                  <div className="ib-item"><span className="ib-label">鉴权</span><span className="ib-value">{formData.auth ? '开启' : '关闭'}</span></div>
+                  <div className="ib-divider"></div>
+                  <div className="ib-item"><span className="ib-label">更新</span><span className="ib-value"><span className="muted">{formData.updateTime}</span></span></div>
+                  <div className="ib-actions">
+                    <Button type="default" className="mira-btn-sm" onClick={() => setIsEditing(true)}>
+                      <Icon name="edit-3" className="w-4 h-4" />编辑
+                    </Button>
+                  </div>
+                </div>
+                {isApiSource && formData.jsonConfig && (
+                  <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="ib-label">JSON 配置</span>
+                    </div>
+                    <div className="relative group">
+                      <pre className="bg-[#fdf6e3] text-[#657b83] p-3 rounded-md overflow-x-auto text-xs font-mono border border-[#eee8d5] max-h-[120px]">{formData.jsonConfig}</pre>
+                      <button onClick={() => copyToClipboard(formData.jsonConfig)} className="absolute top-2 right-2 p-1.5 bg-white border border-gray-200 rounded text-gray-500 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm" title="复制配置"><Icon name="copy" className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tabs */}
+            <div className="mira-tabs">
+              <div className={`mira-tab ${activeTab === 'tools' ? 'active' : ''}`} onClick={() => setActiveTab('tools')}>
+                <Icon name="wrench" className="w-4 h-4" />
+                {isApiSource ? 'Tools 管理' : 'Tools 调试'}
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-6 space-y-6">
+            {/* Tools Management / Debug */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-[10px] border border-[#f0f1f2] flex flex-col h-full min-h-[500px]" style={{boxShadow:'0 1px 4px rgba(0,0,0,.03)'}}>
+                <div className="px-6 py-4 border-b border-[#f0f1f2] flex justify-between items-center">
+                  <h2 className="sec-title">
+                    {isApiSource ? 'Tools 管理' : 'Tools 调试'}
+                  </h2>
+                  {isApiSource && !isNew && (
+                    <Button type="primary" className="mira-btn-sm" onClick={() => {
+                      setEditingToolId(null);
+                      setToolForm({
+                        displayName: '',
+                        identifier: '',
+                        description: '',
+                        inputSchema: '{\n  "type": "object",\n  "properties": {}\n}',
+                        requestType: 'HTTP',
+                        requestMethod: 'POST'
+                      });
+                      setCreateToolVisible(true);
+                    }}>
+                      <Icon name="plus" className="w-4 h-4" />
+                      创建 Tool
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex-1 bg-gray-50/30">
+                  {isApiSource ? (
+                    isNew ? (
+                      <div className="h-full flex flex-col items-center justify-center text-gray-400 p-6">
+                        <Icon name="tool" className="w-16 h-16 mb-4 text-gray-300" />
+                        <p className="text-lg font-medium text-gray-500 mb-1">请先保存基本信息</p>
+                        <p className="text-sm">保存「展示名」等基本信息后，即可创建并管理 Tool</p>
+                      </div>
+                    ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] h-full">
+                      {/* 左侧 Tools 列表 */}
+                      <div className="border-r border-[#f0f1f2] bg-white flex flex-col">
+                        <div className="px-4 pt-4 pb-3 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-[#1f2329]">Tools 列表</span>
+                          <span className="text-xs text-[#646a73] bg-[#f2f3f5] px-1.5 py-0.5 rounded">{tools.length}</span>
+                        </div>
+                        <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5">
+                          {tools.map(tool => (
+                            <button
+                              key={tool.id}
+                              onClick={() => setSelectedToolId(tool.id)}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg border transition-colors ${selectedTool?.id === tool.id ? 'border-[#2f6bff] bg-[#eef3ff]' : 'border-transparent bg-[#f7f8fa] hover:bg-[#eef0f3]'}`}
+                            >
+                              <div className={`text-sm font-medium truncate ${selectedTool?.id === tool.id ? 'text-[#2f6bff]' : 'text-[#1f2329]'}`}>{tool.displayName}</div>
+                              <div className="text-xs text-[#8a9099] font-mono truncate mt-0.5">{tool.identifier}</div>
+                            </button>
+                          ))}
+                          {tools.length === 0 && (
+                            <div className="py-12 text-center text-sm text-gray-400">暂无 Tools，点击下方按钮创建</div>
+                          )}
+                        </div>
+                      </div>
+                      {/* 右侧 详情 / 调试 */}
+                      <div className="p-6 bg-white overflow-y-auto">
+                        {selectedTool ? (
+                          <div className="space-y-6">
+                            {/* 标题 + 操作 */}
+                            <div className="flex items-start justify-between gap-4">
+                              <h3 className="text-[18px] font-bold text-[#1f2329]">{selectedTool.displayName}</h3>
+                              <div className="flex gap-2 shrink-0">
+                                <button className="h-8 px-3 rounded-md border border-[#e5e6eb] bg-white text-xs text-[#646a73] hover:text-[#2f6bff] hover:border-[#2f6bff] transition-colors flex items-center gap-1" onClick={() => handleEditTool(selectedTool)}>
+                                  <Icon name="pencil" className="w-3.5 h-3.5" />编辑 Tool
+                                </button>
+                                <button className="h-8 px-3 rounded-md border border-[#e5e6eb] bg-white text-xs text-[#646a73] hover:text-[#2f6bff] hover:border-[#2f6bff] transition-colors flex items-center gap-1" onClick={() => {
+                                  setEditingToolId(null);
+                                  setToolForm({
+                                    displayName: selectedTool.displayName + ' 副本',
+                                    identifier: selectedTool.identifier + '_copy',
+                                    description: selectedTool.description,
+                                    inputSchema: selectedTool.inputSchema || '{\n  "type": "object",\n  "properties": {}\n}',
+                                    requestType: selectedTool.requestType || 'HTTP',
+                                    requestMethod: selectedTool.requestMethod || 'POST'
+                                  });
+                                  setCreateToolVisible(true);
+                                }}>
+                                  <Icon name="copy" className="w-3.5 h-3.5" />复制 Tool
+                                </button>
+                                <button className="h-8 px-3 rounded-md border border-[#e5e6eb] bg-white text-xs text-[#f54a45] hover:text-white hover:bg-[#f54a45] hover:border-[#f54a45] transition-colors flex items-center gap-1" onClick={() => {
+                                  if (confirm('确定要删除该 Tool 吗？')) {
+                                    onDeleteTool(selectedTool.id);
+                                  }
+                                }}>
+                                  <Icon name="trash-2" className="w-3.5 h-3.5" />删除 Tool
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* 唯一名 */}
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm text-[#646a73] shrink-0">唯一名</span>
+                              <span className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded bg-[#f2f3f5] text-[#4e5969]">
+                                {selectedTool.identifier}
+                                <button onClick={() => copyToClipboard(selectedTool.identifier)} className="text-[#8a9099] hover:text-[#2f6bff]" title="复制"><Icon name="copy" className="w-3 h-3" /></button>
+                              </span>
+                              <span className="text-xs px-2 py-1 rounded font-mono" style={{background:'var(--primary-light)',color:'var(--primary)'}}>{selectedTool.requestMethod}</span>
+                            </div>
+
+                            {/* 描述 */}
+                            <div className="flex items-start gap-3">
+                              <span className="text-sm text-[#646a73] shrink-0 pt-0.5">描述</span>
+                              <p className="text-sm text-[#1f2329] leading-relaxed">{selectedTool.description || '—'}</p>
+                            </div>
+
+                            {/* 调试区域 */}
+                            <div className="pt-2 border-t border-[#f0f1f2]">
+                              <h4 className="sec-title text-[15px] mt-4 mb-3">调试区域</h4>
+                              <div>
+                                <label className="block text-sm font-medium text-[#1f2329] mb-2">输入参数</label>
+                                <textarea
+                                  className="w-full h-40 px-3 py-2 border border-[#e5e6eb] rounded-md focus:outline-none focus:ring-2 focus:ring-[#2f6bff]/30 focus:border-[#2f6bff] font-mono text-sm bg-[#fafbfc]"
+                                  value={debugParams}
+                                  onChange={e => setDebugParams(e.target.value)}
+                                />
+                              </div>
+                              <Button type="primary" className="w-24 mt-4" onClick={handleRunTool}>
+                                <Icon name="play" className="w-4 h-4" />
+                                RUN
+                              </Button>
+                              <div className="mt-4">
+                                <label className="block text-sm font-medium text-[#1f2329] mb-2">响应结果</label>
+                                <pre className="min-h-[140px] bg-[#1f2329] text-green-200 p-4 rounded-md overflow-x-auto text-sm font-mono whitespace-pre-wrap">
+                                  {debugResult || '点击 RUN 后展示模拟调试结果'}
+                                </pre>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                            <Icon name="tool" className="w-16 h-16 mb-4 text-gray-300" />
+                            <p className="text-lg font-medium text-gray-500 mb-1">暂无 Tools</p>
+                            <p className="text-sm">点击左侧「创建 Tool」按钮创建第一个 Tool</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    )
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] h-full">
+                      <div className="border-r border-gray-200 bg-white p-4">
+                        <div className="text-sm font-semibold text-gray-800 mb-3">Tools 列表</div>
+                        <div className="space-y-2">
+                          {tools.map(tool => (
+                            <button
+                              key={tool.id}
+                              onClick={() => setSelectedToolId(tool.id)}
+                              className={`w-full text-left p-3 rounded-md border transition-colors ${selectedTool?.id === tool.id ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-transparent text-gray-700 hover:bg-gray-100'}`}
+                            >
+                              <div className="font-medium text-sm">{tool.displayName}</div>
+                              <div className="text-xs text-gray-500 font-mono mt-1">{tool.identifier}</div>
+                            </button>
+                          ))}
+                          {tools.length === 0 && (
+                            <div className="py-10 text-center text-sm text-gray-400">暂无可调试 Tools</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="p-6 bg-white">
+                        {selectedTool ? (
+                          <div className="space-y-5">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <h3 className="text-lg font-semibold text-gray-800">{selectedTool.displayName}</h3>
+                                <p className="text-sm text-gray-500 mt-2">{selectedTool.description}</p>
+                              </div>
+                              <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded border border-indigo-100 font-mono">{selectedTool.requestMethod}</span>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">输入参数</label>
+                              <textarea
+                                className="w-full h-36 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm bg-gray-50"
+                                value={debugParams}
+                                onChange={e => setDebugParams(e.target.value)}
+                              />
+                            </div>
+                            <Button type="primary" className="w-24" onClick={handleRunTool}>
+                              <Icon name="play" className="w-4 h-4" />
+                              RUN
+                            </Button>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">响应结果</label>
+                              <pre className="min-h-[140px] bg-gray-900 text-green-200 p-4 rounded-md overflow-x-auto text-sm font-mono">
+                                {debugResult || '点击 RUN 后展示模拟调试结果'}
+                              </pre>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                            <Icon name="terminal-square" className="w-16 h-16 mb-4 text-gray-300" />
+                            <p className="text-lg font-medium text-gray-500 mb-1">暂无可调试 Tools</p>
+                            <p className="text-sm">外部注册的 MCP 仅支持对已发现的 Tool 进行调试</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Create Tool Drawer */}
+          <Drawer 
+            title={editingToolId ? "编辑 Tool" : "创建 Tool"} 
+            visible={createToolVisible} 
+            onClose={() => setCreateToolVisible(false)}
+            onConfirm={() => handleCreateToolSubmit(false)}
+            confirmText="保存"
+            extraAction={!editingToolId ? (
+              <Button onClick={() => handleCreateToolSubmit(true)}>
+                保存并继续新建
+              </Button>
+            ) : null}
+          >
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>展示名</label>
+                <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入展示名" value={toolForm.displayName} onChange={e => setToolForm({...toolForm, displayName: e.target.value})} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <span className="text-red-500 mr-1">*</span>标识名
+                  <span className="text-gray-400 text-xs ml-2 font-normal">只能包含小写字母、数字、"_"、"-"、和"/"，并且只能以小写字母开头</span>
+                </label>
+                <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="my_tool_id" value={toolForm.identifier} onChange={e => setToolForm({...toolForm, identifier: e.target.value})} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>描述</label>
+                <textarea className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="帮助 AI Agent（大模型）理解 MCP Server Tool 的功能..." value={toolForm.description} onChange={e => setToolForm({...toolForm, description: e.target.value})}></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>Input Schema</label>
+                <textarea className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm bg-gray-50" rows="8" value={toolForm.inputSchema} onChange={e => setToolForm({...toolForm, inputSchema: e.target.value})}></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>请求类型</label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="reqType" value="HTTP" checked={toolForm.requestType === 'HTTP'} onChange={e => setToolForm({...toolForm, requestType: e.target.value})} className="text-blue-600 focus:ring-blue-500" />
+                    <span>HTTP</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1"><span className="text-red-500 mr-1">*</span>请求方式</label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="reqMethod" value="GET" checked={toolForm.requestMethod === 'GET'} onChange={e => setToolForm({...toolForm, requestMethod: e.target.value})} className="text-blue-600 focus:ring-blue-500" />
+                    <span>GET</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="reqMethod" value="POST" checked={toolForm.requestMethod === 'POST'} onChange={e => setToolForm({...toolForm, requestMethod: e.target.value})} className="text-blue-600 focus:ring-blue-500" />
+                    <span>POST</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </Drawer>
+
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
