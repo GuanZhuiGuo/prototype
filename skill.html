@@ -3008,7 +3008,7 @@ description: 以友好、热情、专业的语气回复客户消息。
               <div class="edit-main-head">
                 <div class="title-stack">
                   <h2>编辑Skill</h2>
-                  <p>编辑区修改后会出现未保存状态；仅保存写入草稿，保存并发布才影响线上版本；展开调试预览可使用当前编辑态。</p>
+                  <p>编辑区修改后会出现未保存状态；仅保存会覆盖当前草稿或另存草稿，保存并发布一定创建新版本；展开调试预览可使用当前编辑态。</p>
                 </div>
                 <div class="inline">
                   <span class="badge ${skill.dirty ? 'orange' : 'green'}" data-dirty-indicator>${skill.dirty ? '未保存变更' : '已保存'}</span>
@@ -3592,7 +3592,7 @@ description: 以友好、热情、专业的语气回复客户消息。
                   `).join('')}
                 </tbody>
               </table>
-              <div class="hint blue mt-16">版本状态最多只有一个“已发布”；发布态之后的新版本为“草稿”。发布覆盖会将其他历史版本状态置为空；回退会清除目标版本之后的版本。</div>
+              <div class="hint blue mt-16">版本号由系统自动递增。保存并发布一定创建新版本并成为唯一发布态；基于已发布/历史版本仅保存会另存为草稿，基于草稿仅保存会覆盖当前草稿；回退会清除目标版本之后的版本。</div>
             </div>
             <div class="modal-foot">
               <button class="btn btn-primary" data-action="closeModal">完成</button>
@@ -3606,20 +3606,20 @@ description: 以友好、热情、专业的语气回复客户消息。
       const skill = getSkill();
       ensureVersionData(skill);
       const action = state.versionAction || 'save';
-      const latest = skill.versions[0];
       const source = action === 'copy' ? skill.versions.find(item => item.version === state.versionSource) : null;
       const isPublish = action === 'publish';
       const isCopy = action === 'copy';
       const title = isCopy ? `复制 ${source?.version || ''} 为新版本` : isPublish ? '保存并发布' : '仅保存';
       const next = nextVersion(maxVersion(skill));
-      const overwriteDisabled = !isPublish && latest?.status !== '草稿';
+      const current = skill.versions.find(item => item.version === skill.version);
+      const willOverwriteDraft = !isPublish && !isCopy && current?.status === '草稿';
       return `
         <div class="modal-backdrop">
-          <section class="modal">
+          <section class="modal small">
             <div class="modal-head">
               <div>
                 <h2>${title}</h2>
-                <p class="muted mt-12">${isPublish ? '发布后该版本成为唯一发布态，其他历史版本状态置为空。' : isCopy ? '复制会基于所选版本文件创建一个新的草稿版本。' : '保存后生成草稿版本，不直接发布。'}</p>
+                <p class="muted mt-12">${isPublish ? '发布一定创建新版本，发布后成为唯一发布态。' : isCopy ? '复制会基于所选版本文件创建一个新的草稿版本。' : willOverwriteDraft ? '当前基于草稿编辑，仅保存会覆盖当前草稿。' : '当前基于已保存版本编辑，仅保存会另存为新的草稿版本。'}</p>
               </div>
               <button class="back-btn" data-action="closeModal">${icon('close')}</button>
             </div>
@@ -3627,44 +3627,14 @@ description: 以友好、热情、专业的语气回复客户消息。
               <div class="version-save-summary">
                 <div class="summary-icon">${isPublish ? icon('send') : isCopy ? icon('copy') : icon('save')}</div>
                 <div>
-                  <strong>${isCopy ? `来源版本：${escapeHtml(source?.version || '-')}` : `当前最近版本：${escapeHtml(latest?.version || '-')}`}</strong>
-                  <span class="muted">${isCopy ? `将复制所选版本文件并创建草稿；新版本号必须大于当前最大版本 ${escapeHtml(maxVersion(skill))}。` : isPublish ? '发布后目标版本会成为唯一发布态，列表发布状态同步更新。' : '仅保存会生成草稿版本；覆盖最近版本时要求最近版本本身为草稿态。'}</span>
+                  <strong>${willOverwriteDraft ? `覆盖草稿：${escapeHtml(skill.version)}` : `将生成：${escapeHtml(next)}`}</strong>
+                  <span class="muted">${isPublish ? '系统自动递增版本号，不需要手动填写；提交后当前页面刷新为新发布版本。' : willOverwriteDraft ? '系统不会新增版本号，只更新当前草稿内容和版本说明；提交后当前页面刷新。' : '系统自动递增版本号并保存为草稿；提交后当前页面刷新。'}</span>
                 </div>
               </div>
-              ${isCopy ? '' : `
-                <div class="version-mode-grid">
-                  <label class="version-mode-card">
-                    <input type="radio" name="versionMode" value="new" checked>
-                    <span>
-                      <strong>新建版本</strong>
-                      <span>填写新版本号和可选描述。版本号必须大于当前最大版本 ${escapeHtml(maxVersion(skill))}。</span>
-                    </span>
-                  </label>
-                  <label class="version-mode-card ${overwriteDisabled ? 'disabled' : ''}">
-                    <input type="radio" name="versionMode" value="overwrite" ${overwriteDisabled ? 'disabled' : ''}>
-                    <span>
-                      <strong>覆盖最近版本 ${escapeHtml(latest?.version || '-')}</strong>
-                      <span>${overwriteDisabled ? '仅保存覆盖时，最近版本必须为草稿态。' : isPublish ? '覆盖后该版本为发布态，其他历史版本状态置为空。' : '覆盖后继续保持草稿态，不新增版本号。'}</span>
-                    </span>
-                  </label>
-                </div>
-              `}
               <div class="version-form-card">
-                <div class="form-grid">
-                  <div class="field">
-                    <label><span class="required">*</span>版本号</label>
-                    <input id="versionNumberInput" placeholder="${escapeHtml(stripVersionPrefix(next))}" value="${isCopy ? stripVersionPrefix(next) : ''}">
-                    <small>新建或复制时填写，格式为数点数，例如 1.3；覆盖最近版本时以最近版本号为准。</small>
-                  </div>
-                  <div class="field">
-                    <label>当前最大版本</label>
-                    <input value="${escapeHtml(maxVersion(skill))}" disabled>
-                    <small>新建版本保存校验必须大于该版本。</small>
-                  </div>
-                  <div class="field full">
-                    <label>版本描述</label>
-                    <textarea id="versionDescInput" placeholder="可填写本次修改、保存或发布的说明。"></textarea>
-                  </div>
+                <div class="field">
+                  <label>版本说明</label>
+                  <textarea id="versionDescInput" placeholder="填写本次修改、保存或发布的说明。"></textarea>
                 </div>
               </div>
             </div>
@@ -3870,35 +3840,25 @@ description: 以友好、热情、专业的语气回复客户消息。
     function commitVersionForm(skill) {
       ensureVersionData(skill);
       const action = state.versionAction || 'save';
-      const latest = skill.versions[0];
-      const mode = action === 'copy' ? 'new' : (document.querySelector('input[name="versionMode"]:checked')?.value || 'new');
       const desc = document.getElementById('versionDescInput')?.value.trim() || '';
-      const input = document.getElementById('versionNumberInput')?.value.trim() || '';
       const status = action === 'publish' ? '已发布' : '草稿';
 
-      if (mode === 'overwrite') {
-        if (action === 'save' && latest.status !== '草稿') {
-          toast('仅保存覆盖时，最近版本必须是草稿态。');
-          return false;
-        }
-        saveVersionSnapshot(skill, { version: latest.version, desc, status, overwrite: true });
+      const source = action === 'copy' ? skill.versions.find(item => item.version === state.versionSource) : null;
+      if (action === 'save') {
+        const current = skill.versions.find(item => item.version === skill.version);
+        const shouldOverwriteDraft = current?.status === '草稿';
+        const version = shouldOverwriteDraft ? skill.version : nextVersion(maxVersion(skill));
+        saveVersionSnapshot(skill, {
+          version,
+          desc,
+          status,
+          overwrite: shouldOverwriteDraft
+        });
         return true;
       }
 
-      const parsed = parseVersion(input);
-      if (!parsed) {
-        toast('版本号必填，格式为数点数，例如 1.3。');
-        return false;
-      }
-      const currentMax = maxVersion(skill);
-      if (compareVersion(parsed.label, currentMax) <= 0) {
-        toast(`版本号必须大于当前最大版本 ${currentMax}。`);
-        return false;
-      }
-
-      const source = action === 'copy' ? skill.versions.find(item => item.version === state.versionSource) : null;
       saveVersionSnapshot(skill, {
-        version: parsed.label,
+        version: nextVersion(maxVersion(skill)),
         desc,
         status,
         overwrite: false,
